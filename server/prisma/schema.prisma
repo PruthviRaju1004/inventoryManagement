@@ -1,0 +1,531 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id           Int      @id @default(autoincrement())
+  name         String   @unique
+  contactEmail String   @unique
+  contactPhone String
+  address      String
+  isActive     Boolean  @default(true)
+  taxId        String? // Tax Identification Number
+  dunsNumber   String? // DUNS Number
+  website      String? // Must match contact email domain
+  socialMedia  Json? // JSON to store multiple social media links
+  legalProofs  Json? // JSON array to store multiple PDF file paths
+  createdAt    DateTime @default(now())
+  createdBy    Int
+  updatedAt    DateTime @updatedAt
+  updatedBy    Int
+
+  users            User[]
+  suppliers        Supplier[]
+  customers        Customer[]
+  warehouses       Warehouse[]
+  items            Item[]
+  purchaseOrders   PurchaseOrder[]
+  grns             GRN[]
+  inventoryReports InventoryReport[]
+
+  @@map("organizations")
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  organizationId Int? // Foreign key to Organization
+  firstName      String    @default("")
+  lastName       String    @default("")
+  email          String    @unique
+  phoneNumber    String?
+  username       String    @unique @default("")
+  passwordHash   String    @default("")
+  roleId         Int       @default(3) // Assuming 3 is a generic employee role
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  createdBy      Int?
+  updatedAt      DateTime  @default(now())
+  updatedBy      Int?
+  lastLogin      DateTime?
+
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role         Role          @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@map("users")
+}
+
+model Role {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique // Example: "super_admin", "admin", "employee"
+  createdAt DateTime @default(now())
+
+  users       User[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique // Example: "can_manage_users", "can_create_organization"
+  description String?
+  createdAt   DateTime @default(now())
+
+  roles RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       Int
+  permissionId Int
+
+  role       Role       @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model Supplier {
+  id             Int      @id @default(autoincrement())
+  organizationId Int // Foreign key to Organization
+  name           String
+  supplierCode   String   @unique
+  contactName    String
+  contactEmail   String   @unique
+  contactPhone   String
+  paymentTerms   String
+  currency       String
+  taxId          String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  createdBy      Int
+  updatedAt      DateTime @updatedAt
+  updatedBy      Int
+
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  supplierSites  SupplierSite[] // One supplier can have multiple sites
+  supplierItems  SupplierItem[]
+  purchaseOrders PurchaseOrder[] // One supplier can have multiple purchase orders
+  grns           GRN[] // One supplier can have multiple GRNs
+
+  @@map("suppliers")
+}
+
+model SupplierSite {
+  id           Int      @id @default(autoincrement())
+  supplierId   Int // Foreign key to Supplier
+  siteName     String
+  siteCode     String   @unique
+  address      String
+  contactName  String
+  contactEmail String
+  contactPhone String
+  isPrimary    Boolean  @default(false)
+  latitude     Decimal?
+  longitude    Decimal?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  createdBy    Int
+  updatedAt    DateTime @updatedAt
+  updatedBy    Int
+
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@map("supplier_sites")
+}
+
+model Customer {
+  id             Int      @id @default(autoincrement())
+  organizationId Int // Foreign key to Organization
+  name           String
+  customerCode   String   @unique
+  contactName    String
+  contactEmail   String   @unique
+  contactPhone   String
+  paymentTerms   String
+  currency       String
+  taxId          String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  createdBy      Int
+  updatedAt      DateTime @updatedAt
+  updatedBy      Int
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("customers")
+}
+
+model Warehouse {
+  id             Int      @id @default(autoincrement())
+  organizationId Int // Foreign key to Organization
+  name           String   @db.VarChar(100)
+  code           String   @unique @db.VarChar(20)
+  address        String
+  contactEmail   String?  @db.VarChar(100)
+  contactPhone   String?  @db.VarChar(20)
+  latitude       Decimal? @db.Decimal(10, 7)
+  longitude      Decimal? @db.Decimal(10, 7)
+  sqFoot         Int? // Square footage of the warehouse
+  noOfDocks      Int? // Number of docks in the warehouse
+  lotSize        Int? // Lot size of the warehouse
+  shelvesRacks   Int? // Number of shelves and racks
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  createdBy      Int
+  updatedAt      DateTime @updatedAt
+  updatedBy      Int
+
+  organization       Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  subWarehouses      SubWarehouse[]
+  warehouseItems     WarehouseItem[]
+  // purchaseOrders PurchaseOrder[]
+  stockTransfersFrom StockTransfer[]    @relation("StockTransfersFrom")
+  stockTransfersTo   StockTransfer[]    @relation("StockTransfersTo")
+  stockTransactions  StockTransaction[] @relation("WarehouseToStockTransactions")
+  grns               GRN[]
+  inventoryReports   InventoryReport[]
+
+  @@map("warehouses")
+}
+
+model SubWarehouse {
+  id                 Int      @id @default(autoincrement())
+  warehouseId        Int // Foreign key to Warehouse
+  name               String   @db.VarChar(100)
+  code               String   @unique @db.VarChar(20)
+  description        String?
+  capacity           Decimal? @db.Decimal(10, 2)
+  temperatureControl Boolean  @default(false)
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  createdBy          Int
+  updatedAt          DateTime @updatedAt
+  updatedBy          Int
+
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  @@map("sub_warehouses")
+}
+
+enum ItemType {
+  INVENTORY
+  NON_INVENTORY
+  SERVICE
+}
+
+enum CostingMethod {
+  FIFO
+  LIFO
+  AVERAGE
+  STANDARD
+}
+
+model Item {
+  id                 Int           @id @default(autoincrement())
+  organizationId     Int
+  name               String        @db.VarChar(100)
+  itemCode           String        @unique @db.VarChar(20)
+  description        String?       @db.Text // Detailed description of the item
+  searchDescription  String?       @db.VarChar(255) // Short description used for search purposes
+  baseUom            String        @db.VarChar(20)
+  secondaryUom       String?       @db.VarChar(20) // Secondary unit of measure (optional)
+  qtyPerUom          Decimal?      @db.Decimal(10, 2) // Quantity per unit of measure for conversions
+  salesUom           String?       @db.VarChar(20) // Unit of measure for sales transactions
+  purchaseUom        String?       @db.VarChar(20) // Unit of measure for purchase transactions
+  type               ItemType // ENUM: Inventory, Non-Inventory, Service
+  inventoryGroup     String?       @db.VarChar(50)
+  itemCategoryCode   String?       @db.VarChar(50)
+  parentCategory     String?       @db.VarChar(50)
+  productType        String?       @db.VarChar(50)
+  hsnSacCode         String?       @db.VarChar(20)
+  gstCredit          Boolean       @default(false)
+  make               String?       @db.VarChar(50)
+  color              String?       @db.VarChar(20)
+  size               String?       @db.VarChar(20)
+  blocked            Boolean       @default(false)
+  unitPrice          Decimal       @db.Decimal(10, 2)
+  costingMethod      CostingMethod // ENUM: FIFO, LIFO, Average, Standard  
+  costPrice          Decimal?      @db.Decimal(10, 2)
+  commissionEligible Boolean       @default(false)
+  commissionFactor   Decimal?      @db.Decimal(5, 2)
+  businessUnitName   String?       @db.VarChar(50)
+  leadTimeDays       Int?
+  barcode            String?       @db.VarChar(50)
+  reorderLevel       Int?
+  safetyStockLevel   Int?
+  expirationDate     DateTime?
+  isPerishable       Boolean       @default(false)
+  isActive           Boolean       @default(true)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  createdBy          Int
+  updatedBy          Int
+
+  organization       Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  supplierItems      SupplierItem[]
+  warehouseItems     WarehouseItem[]
+  purchaseOrderItems PurchaseOrderItem[]
+  StockTransaction   StockTransaction[]
+  StockTransfer      StockTransfer[]
+  GRNLineItem        GRNLineItem[]
+
+  @@map("items")
+}
+
+model SupplierItem {
+  supplierId      Int
+  itemId          Int
+  supply_quantity Decimal  @db.Decimal(10, 2)
+  supply_price    Decimal  @db.Decimal(10, 2)
+  effective_date  DateTime
+  is_preferred    Boolean  @default(false)
+  created_date    DateTime @default(now())
+  created_by      Int
+  updated_date    DateTime @updatedAt
+  updated_by      Int
+
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  item     Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@id([supplierId, itemId])
+  @@map("supplier_items")
+}
+
+model WarehouseItem {
+  warehouseId      Int
+  itemId           Int
+  quantity         Decimal @db.Decimal(10, 2)
+  reorderLevel     Int?
+  reservedStock    Decimal @db.Decimal(10, 2)
+  safetyStockLevel Int? // Ensure stock buffer
+
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  item      Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@id([warehouseId, itemId])
+  @@map("warehouse_items")
+}
+
+enum StockTransactionType {
+  PURCHASE
+  SALE
+  ADJUSTMENT
+  TRANSFER
+}
+
+enum StockTransferStatus {
+  PENDING
+  COMPLETED
+  CANCELED
+}
+
+model StockTransaction {
+  id              Int                  @id @default(autoincrement())
+  warehouseId     Int
+  itemId          Int
+  transactionType StockTransactionType
+  quantity        Decimal              @db.Decimal(10, 2)
+  referenceId     Json? // More flexible for storing related transaction details
+  createdAt       DateTime             @default(now())
+  createdBy       Int
+
+  warehouse Warehouse @relation("WarehouseToStockTransactions", fields: [warehouseId], references: [id], onDelete: Cascade)
+  item      Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@map("stock_transactions")
+}
+
+model StockTransfer {
+  id              Int                 @id @default(autoincrement())
+  fromWarehouseId Int
+  toWarehouseId   Int
+  itemId          Int
+  quantity        Decimal             @db.Decimal(10, 2)
+  status          StockTransferStatus @default(PENDING) // ENUM instead of string
+  createdAt       DateTime            @default(now())
+  createdBy       Int
+
+  fromWarehouse Warehouse @relation("StockTransfersFrom", fields: [fromWarehouseId], references: [id], onDelete: Cascade)
+  toWarehouse   Warehouse @relation("StockTransfersTo", fields: [toWarehouseId], references: [id], onDelete: Cascade)
+  item          Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@map("stock_transfers")
+}
+
+model PurchaseOrder {
+  id             Int                 @id @default(autoincrement())
+  organizationId Int // Foreign key to Organization
+  supplierId     Int // Foreign key to Supplier
+  orderNumber    String              @unique @default("PO-000000") @db.VarChar(100)
+  status         PurchaseOrderStatus @default(PENDING)
+  totalAmount    Decimal             @db.Decimal(10, 2)
+  paymentTerms   PaymentTerms        @default(NET_30)
+  orderDate      DateTime            @default(now())
+  expectedDate   DateTime?
+  receivedDate   DateTime?
+  remarks        String?             @db.Text // Additional remarks
+  isActive       Boolean             @default(true)
+  createdAt      DateTime            @default(now())
+  createdBy      Int
+  updatedAt      DateTime            @updatedAt
+  updatedBy      Int
+
+  organization       Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  supplier           Supplier            @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  grns               GRN[]
+  purchaseOrderItems PurchaseOrderItem[]
+
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id               Int      @id @default(autoincrement())
+  purchaseOrderId  Int // Foreign key to PurchaseOrder
+  itemId           Int // Foreign key to Item
+  quantity         Decimal  @db.Decimal(10, 2)
+  unitPrice        Decimal  @db.Decimal(10, 2)
+  itemName         String   @default("Unknown Item") @db.VarChar(100)
+  totalPrice       Decimal  @default(0.00) @db.Decimal(10, 2) // Default price
+  uom              String   @default("PCS") @db.VarChar(20) // Default UOM
+  receivedQuantity Decimal? @db.Decimal(10, 2)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  item          Item          @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  // grnLineItems    GRNLineItem[]
+
+  @@map("purchase_order_items")
+}
+
+enum PurchaseOrderStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+  CANCELLED
+  OPEN
+  CLOSED
+}
+
+enum PaymentTerms {
+  NET_30
+  NET_60
+  NET_90
+  PREPAID
+}
+
+// GRN Header Table
+model GRN {
+  grnId          Int       @id @default(autoincrement())
+  grnNumber      String    @unique @db.VarChar(100)
+  organizationId Int  
+  grnDate        DateTime @default(now())
+  poId           Int  
+  poNumber       String   @db.VarChar(100) @default("PO-000000")
+  supplierId     Int  
+  supplierName   String    @db.VarChar(100)
+  status         GRNStatus  @default(Draft)
+  totalAmount    Decimal   @db.Decimal(15, 2)
+  remarks        String?   @db.Text
+  createdAt      DateTime  @default(now())
+  createdBy      Int  
+  updatedAt      DateTime  @updatedAt
+  updatedBy      Int  
+  warehouseId    Int  
+  warehouseName  String    @db.VarChar(100)
+
+  po           PurchaseOrder @relation(fields: [poId], references: [id], onDelete: Cascade)
+  supplier     Supplier      @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  warehouse    Warehouse     @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  grnLineItems GRNLineItem[] // One-to-many relationship with GRNLineItem
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+// Enum for GRN Status
+enum GRNStatus {
+  Draft
+  Approved
+  Closed
+  Cancelled
+}
+
+// GRN Line Item Table
+model GRNLineItem {
+  lineId            Int       @id @default(autoincrement())
+  grnId             Int  
+  // poItemId     Int
+  itemId            Int 
+  itemName          String    @db.VarChar(100)
+  orderedQty        Decimal   @db.Decimal(10, 2)
+  receivedQty       Decimal   @db.Decimal(10, 2)
+  unitPrice         Decimal   @db.Decimal(10, 2)
+  uom               String    @db.VarChar(20)
+  lineTotal         Decimal   @db.Decimal(15, 2) // Calculated as received_qty * unit_price
+  batchNumber       String?   @db.VarChar(50)
+  manufacturingDate DateTime?
+  expiryDate        DateTime?
+  storageLocation   String?   @db.VarChar(100)
+  remarks           String?   @db.Text
+  createdAt         DateTime  @default(now())
+  createdBy         Int
+  updatedAt         DateTime  @updatedAt
+  updatedBy         Int
+
+  // Relations
+  grn  GRN  @relation(fields: [grnId], references: [grnId], onDelete: Cascade)
+  // poItem         PurchaseOrderItem @relation(fields: [poItemId], references: [id])
+  item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+}
+
+model InventoryReport {
+  inventoryId       Int          @id @default(autoincrement())
+  organizationId    Int
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  itemName          String       @db.VarChar(255)
+  sku               String       @db.VarChar(50)
+  batchNumber       String?      @db.VarChar(50)
+  lotNumber         String?      @db.VarChar(50)
+  serialNumber      String?      @db.VarChar(50)
+  manufacturingDate DateTime?
+  expiryDate        DateTime?
+  stockInwardDate   DateTime?
+  stockOutwardDate  DateTime?
+  openingQuantity   Decimal      @db.Decimal(10, 2)
+  currentQuantity   Decimal      @db.Decimal(10, 2)
+  inwardQuantity    Decimal      @db.Decimal(10, 2)
+  outwardQuantity   Decimal      @db.Decimal(10, 2)
+  committedQuantity Decimal      @db.Decimal(10, 2)
+  availableQuantity Decimal      @db.Decimal(10, 2)
+  damagedQuantity   Decimal      @db.Decimal(10, 2)
+  unitCost          Decimal      @db.Decimal(15, 2)
+  totalValue        Decimal      @db.Decimal(20, 2)
+  reorderLevel      Decimal?     @db.Decimal(10, 2)
+
+  warehouseId Int
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  warehouseName    String  @db.VarChar(100)
+  subWarehouseName String? @db.VarChar(100)
+  binLocation      String? @db.VarChar(100)
+
+  category      String? @db.VarChar(100)
+  subCategory   String? @db.VarChar(100)
+  unitOfMeasure String? @db.VarChar(50)
+  barcode       String? @db.VarChar(100)
+
+  createdAt DateTime @default(now())
+  createdBy Int
+  updatedAt DateTime @updatedAt
+  updatedBy Int
+
+  @@map("inventory_reports")
+}

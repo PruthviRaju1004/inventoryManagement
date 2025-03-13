@@ -1,0 +1,122 @@
+[
+  {
+    "salesSummaryId": "salesSummaryId_1",
+    "totalValue": 1.5,
+    "changePercentage": 1.5,
+    "date": "2025-02-02T12:34:56.789Z"
+  },
+  {
+    "salesSummaryId": "salesSummaryId_2",
+    "totalValue": 3.0,
+    "changePercentage": 3.0,
+    "date": "2025-02-03T12:34:56.789Z"
+  },
+  {
+    "salesSummaryId": "salesSummaryId_3",
+    "totalValue": 4.5,
+    "changePercentage": 4.5,
+    "date": "2025-02-04T12:34:56.789Z"
+  },
+  {
+    "salesSummaryId": "salesSummaryId_4",
+    "totalValue": 6.0,
+    "changePercentage": 6.0,
+    "date": "2025-02-05T12:34:56.789Z"
+  },
+  {
+    "salesSummaryId": "salesSummaryId_5",
+    "totalValue": 7.5,
+    "changePercentage": 7.5,
+    "date": "2025-02-06T12:34:56.789Z"
+  },
+  {
+    "salesSummaryId": "salesSummaryId_6",
+    "totalValue": 9.0,
+    "changePercentage": 9.0,
+    "date": "2025-02-07T12:34:56.789Z"
+  },
+  {
+    "salesSummaryId": "salesSummaryId_7",
+    "totalValue": 10.5,
+    "changePercentage": 10.5,
+    "date": "2025-02-08T12:34:56.789Z"
+  },
+  {
+    "salesSummaryId": "salesSummaryId_8",
+    "totalValue": 12.0,
+    "changePercentage": 12.0,
+    "date": "2025-02-09T12:34:56.789Z"
+  },
+  {
+    "salesSummaryId": "salesSummaryId_9",
+    "totalValue": 13.5,
+    "changePercentage": 13.5,
+    "date": "2025-02-10T12:34:56.789Z"
+  },
+  {
+    "salesSummaryId": "salesSummaryId_10",
+    "totalValue": 15.0,
+    "changePercentage": 15.0,
+    "date": "2025-02-11T12:34:56.789Z"
+  },
+  {
+    "salesSummaryId": "salesSummaryId_11",
+    "totalValue": 16.5,
+    "changePercentage": 16.5,
+    "date": "2025-02-12T12:34:56.789Z"
+  },
+  {
+    "salesSummaryId": "salesSummaryId_12",
+    "totalValue": 18.0,
+    "changePercentage": 18.0,
+    "date": "2025-02-13T12:34:56.789Z"
+  },
+  {
+    "salesSummaryId": "salesSummaryId_13",
+    "totalValue": 19.5,
+    "changePercentage": 19.5,
+    "date": "2025-02-14T12:34:56.789Z"
+  },
+  {
+    "salesSummaryId": "salesSummaryId_14",
+    "totalValue": 21.0,
+    "changePercentage": 21.0,
+    "date": "2025-02-15T12:34:56.789Z"
+  },
+  {
+    "salesSummaryId": "salesSummaryId_15",
+    "totalValue": 22.5,
+    "changePercentage": 22.5,
+    "date": "2025-02-16T12:34:56.789Z"
+  },
+  {
+    "salesSummaryId": "salesSummaryId_16",
+    "totalValue": 24.0,
+    "changePercentage": 24.0,
+    "date": "2025-02-17T12:34:56.789Z"
+  },
+  {
+    "salesSummaryId": "salesSummaryId_17",
+    "totalValue": 25.5,
+    "changePercentage": 25.5,
+    "date": "2025-02-18T12:34:56.789Z"
+  },
+  {
+    "salesSummaryId": "salesSummaryId_18",
+    "totalValue": 27.0,
+    "changePercentage": 27.0,
+    "date": "2025-02-19T12:34:56.789Z"
+  },
+  {
+    "salesSummaryId": "salesSummaryId_19",
+    "totalValue": 28.5,
+    "changePercentage": 28.5,
+    "date": "2025-02-20T12:34:56.789Z"
+  },
+  {
+    "salesSummaryId": "salesSummaryId_20",
+    "totalValue": 30.0,
+    "changePercentage": 30.0,
+    "date": "2025-02-21T12:34:56.789Z"
+  }
+]

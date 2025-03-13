@@ -1,0 +1,202 @@
+[
+  {
+    "purchaseId": "purchaseId_1",
+    "productId": "productId_1",
+    "userId": "userId_1",
+    "supplierId": "supplierId_1",
+    "timestamp": "2025-02-02T04:03:00Z",
+    "quantity": 10,
+    "unitCost": 1.5,
+    "totalCost": 1.5
+  },
+  {
+    "purchaseId": "purchaseId_2",
+    "productId": "productId_2",
+    "userId": "userId_2",
+    "supplierId": "supplierId_2",
+    "timestamp": "2025-02-03T04:03:00Z",
+    "quantity": 20,
+    "unitCost": 3.0,
+    "totalCost": 3.0
+  },
+  {
+    "purchaseId": "purchaseId_3",
+    "productId": "productId_3",
+    "userId": "userId_3",
+    "supplierId": "supplierId_3",
+    "timestamp": "2025-02-04T04:03:00Z",
+    "quantity": 30,
+    "unitCost": 4.5,
+    "totalCost": 4.5
+  },
+  {
+    "purchaseId": "purchaseId_4",
+    "productId": "productId_4",
+    "userId": "userId_4",
+    "supplierId": "supplierId_4",
+    "timestamp": "2025-02-05T04:03:00Z",
+    "quantity": 40,
+    "unitCost": 6.0,
+    "totalCost": 6.0
+  },
+  {
+    "purchaseId": "purchaseId_5",
+    "productId": "productId_5",
+    "userId": "userId_5",
+    "supplierId": "supplierId_5",
+    "timestamp": "2025-02-06T04:03:00Z",
+    "quantity": 50,
+    "unitCost": 7.5,
+    "totalCost": 7.5
+  },
+  {
+    "purchaseId": "purchaseId_6",
+    "productId": "productId_6",
+    "userId": "userId_6",
+    "supplierId": "supplierId_6",
+    "timestamp": "2025-02-07T04:03:00Z",
+    "quantity": 60,
+    "unitCost": 9.0,
+    "totalCost": 9.0
+  },
+  {
+    "purchaseId": "purchaseId_7",
+    "productId": "productId_7",
+    "userId": "userId_7",
+    "supplierId": "supplierId_7",
+    "timestamp": "2025-02-08T04:03:00Z",
+    "quantity": 70,
+    "unitCost": 10.5,
+    "totalCost": 10.5
+  },
+  {
+    "purchaseId": "purchaseId_8",
+    "productId": "productId_8",
+    "userId": "userId_8",
+    "supplierId": "supplierId_8",
+    "timestamp": "2025-02-09T04:03:00Z",
+    "quantity": 80,
+    "unitCost": 12.0,
+    "totalCost": 12.0
+  },
+  {
+    "purchaseId": "purchaseId_9",
+    "productId": "productId_9",
+    "userId": "userId_9",
+    "supplierId": "supplierId_9",
+    "timestamp": "2025-02-10T04:03:00Z",
+    "quantity": 90,
+    "unitCost": 13.5,
+    "totalCost": 13.5
+  },
+  {
+    "purchaseId": "purchaseId_10",
+    "productId": "productId_10",
+    "userId": "userId_10",
+    "supplierId": "supplierId_10",
+    "timestamp": "2025-02-11T04:03:00Z",
+    "quantity": 100,
+    "unitCost": 15.0,
+    "totalCost": 15.0
+  },
+  {
+    "purchaseId": "purchaseId_11",
+    "productId": "productId_11",
+    "userId": "userId_11",
+    "supplierId": "supplierId_11",
+    "timestamp": "2025-02-12T04:03:00Z",
+    "quantity": 110,
+    "unitCost": 16.5,
+    "totalCost": 16.5
+  },
+  {
+    "purchaseId": "purchaseId_12",
+    "productId": "productId_12",
+    "userId": "userId_12",
+    "supplierId": "supplierId_12",
+    "timestamp": "2025-02-13T04:03:00Z",
+    "quantity": 120,
+    "unitCost": 18.0,
+    "totalCost": 18.0
+  },
+  {
+    "purchaseId": "purchaseId_13",
+    "productId": "productId_13",
+    "userId": "userId_13",
+    "supplierId": "supplierId_13",
+    "timestamp": "2025-02-14T04:03:00Z",
+    "quantity": 130,
+    "unitCost": 19.5,
+    "totalCost": 19.5
+  },
+  {
+    "purchaseId": "purchaseId_14",
+    "productId": "productId_14",
+    "userId": "userId_14",
+    "supplierId": "supplierId_14",
+    "timestamp": "2025-02-15T04:03:00Z",
+    "quantity": 140,
+    "unitCost": 21.0,
+    "totalCost": 21.0
+  },
+  {
+    "purchaseId": "purchaseId_15",
+    "productId": "productId_15",
+    "userId": "userId_15",
+    "supplierId": "supplierId_15",
+    "timestamp": "2025-02-16T04:03:00Z",
+    "quantity": 150,
+    "unitCost": 22.5,
+    "totalCost": 22.5
+  },
+  {
+    "purchaseId": "purchaseId_16",
+    "productId": "productId_16",
+    "userId": "userId_16",
+    "supplierId": "supplierId_16",
+    "timestamp": "2025-02-17T04:03:00Z",
+    "quantity": 160,
+    "unitCost": 24.0,
+    "totalCost": 24.0
+  },
+  {
+    "purchaseId": "purchaseId_17",
+    "productId": "productId_17",
+    "userId": "userId_17",
+    "supplierId": "supplierId_17",
+    "timestamp": "2025-02-18T04:03:00Z",
+    "quantity": 170,
+    "unitCost": 25.5,
+    "totalCost": 25.5
+  },
+  {
+    "purchaseId": "purchaseId_18",
+    "productId": "productId_18",
+    "userId": "userId_18",
+    "supplierId": "supplierId_18",
+    "timestamp": "2025-02-19T04:03:00Z",
+    "quantity": 180,
+    "unitCost": 27.0,
+    "totalCost": 27.0
+  },
+  {
+    "purchaseId": "purchaseId_19",
+    "productId": "productId_19",
+    "userId": "userId_19",
+    "supplierId": "supplierId_19",
+    "timestamp": "2025-02-20T04:03:00Z",
+    "quantity": 190,
+    "unitCost": 28.5,
+    "totalCost": 28.5
+  },
+  {
+    "purchaseId": "purchaseId_20",
+    "productId": "productId_20",
+    "userId": "userId_20",
+    "supplierId": "supplierId_20",
+    "timestamp": "2025-02-21T04:03:00Z",
+    "quantity": 200,
+    "unitCost": 30.0,
+    "totalCost": 30.0
+  }
+]

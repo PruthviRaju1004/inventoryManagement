@@ -1,0 +1,5 @@
+-- DropForeignKey
+ALTER TABLE "GRNLineItem" DROP CONSTRAINT "GRNLineItem_grnId_fkey";
+
+-- AddForeignKey
+ALTER TABLE "GRNLineItem" ADD CONSTRAINT "GRNLineItem_grnId_fkey" FOREIGN KEY ("grnId") REFERENCES "GRN"("grnId") ON DELETE CASCADE ON UPDATE CASCADE;

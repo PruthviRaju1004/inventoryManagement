@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root,
+.app {
+  height: 100%;
+  width: 100%;
+  @apply text-sm;
+  @apply bg-gray-500;
+  @apply text-gray-900;
+}
+
+.btn-primary {
+  @apply bg-primary_btn_color text-[#fff] font-medium 
+  font-sans text-base text-center px-4 h-12 rounded-sm;
+}
+
+.btn-cancel {
+  @apply bg-gray-400 text-[#fff] font-medium 
+  font-sans text-base text-center px-4 h-12 rounded-sm
+}
+/* .actionBtn{
+  + .actionBtn{
+      margin-left: 8px; 
+  }
+  &.primary{
+      background: $jungle-mist;
+      color: $organic-black;
+  }  
+  &.warning{
+      background-color: $orient;
+      color: $pure-white;
+  }
+  &.clean{
+      background: $pure-white;
+      color: $orient;
+  }
+  &.error{
+      background: $error;
+      color: $pure-white;
+  }
+  &.disabled{
+      opacity: 0.5;
+      pointer-events: none;
+  }  
+  border:none;
+  font-family: $font-bitter;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 16px;
+  text-align: center;
+  padding: 8px 16px 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-block;
+  letter-spacing: 0px;
+} */
+
+@media (min-width: 768px) {
+  .custom-grid-rows {
+    grid-template-rows: repeat(8, 20vh);
+  }
+}
+
+@media (min-width: 1280px) {
+  .custom-grid-rows {
+    grid-template-rows: repeat(8, 7.5vh);
+  }
+}
+
+/* $organic-black: #001A20;
+$orient: #00667E; 
+$jungle-mist: #C4D5D9;
+$pure-white: #FFFFFF;
+$pure-black: #000000;
+$jewel: #167434;
+$error: #AE0000;
+$success: #1a531b;
+$greyer: #C4D5D9;
+$gray:#E5E5E5;
+$light-grey: #FBFBFB;
+$light-blue: #2A7E92;
+$light-grey2: #667679;
+$granny-smith: #96E095;
+$light-grey1: #C4C4C4;
+
+$font-bitter: Bitter,serif;
+$font-exo: Exo, sans-serif;
+$font-inter: Inter, sans-serif; */

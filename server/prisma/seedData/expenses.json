@@ -1,0 +1,122 @@
+[
+  {
+    "expenseId": "expenseId_1",
+    "category": "category_1",
+    "amount": 1.5,
+    "timestamp": "2025-02-02T12:34:56.789Z"
+  },
+  {
+    "expenseId": "expenseId_2",
+    "category": "category_2",
+    "amount": 3.0,
+    "timestamp": "2025-02-03T12:34:56.789Z"
+  },
+  {
+    "expenseId": "expenseId_3",
+    "category": "category_3",
+    "amount": 4.5,
+    "timestamp": "2025-02-04T12:34:56.789Z"
+  },
+  {
+    "expenseId": "expenseId_4",
+    "category": "category_4",
+    "amount": 6.0,
+    "timestamp": "2025-02-05T12:34:56.789Z"
+  },
+  {
+    "expenseId": "expenseId_5",
+    "category": "category_5",
+    "amount": 7.5,
+    "timestamp": "2025-02-06T12:34:56.789Z"
+  },
+  {
+    "expenseId": "expenseId_6",
+    "category": "category_6",
+    "amount": 9.0,
+    "timestamp": "2025-02-07T12:34:56.789Z"
+  },
+  {
+    "expenseId": "expenseId_7",
+    "category": "category_7",
+    "amount": 10.5,
+    "timestamp": "2025-02-08T12:34:56.789Z"
+  },
+  {
+    "expenseId": "expenseId_8",
+    "category": "category_8",
+    "amount": 12.0,
+    "timestamp": "2025-02-09T12:34:56.789Z"
+  },
+  {
+    "expenseId": "expenseId_9",
+    "category": "category_9",
+    "amount": 13.5,
+    "timestamp": "2025-02-10T12:34:56.789Z"
+  },
+  {
+    "expenseId": "expenseId_10",
+    "category": "category_10",
+    "amount": 15.0,
+    "timestamp": "2025-02-11T12:34:56.789Z"
+  },
+  {
+    "expenseId": "expenseId_11",
+    "category": "category_11",
+    "amount": 16.5,
+    "timestamp": "2025-02-12T12:34:56.789Z"
+  },
+  {
+    "expenseId": "expenseId_12",
+    "category": "category_12",
+    "amount": 18.0,
+    "timestamp": "2025-02-13T12:34:56.789Z"
+  },
+  {
+    "expenseId": "expenseId_13",
+    "category": "category_13",
+    "amount": 19.5,
+    "timestamp": "2025-02-14T12:34:56.789Z"
+  },
+  {
+    "expenseId": "expenseId_14",
+    "category": "category_14",
+    "amount": 21.0,
+    "timestamp": "2025-02-15T12:34:56.789Z"
+  },
+  {
+    "expenseId": "expenseId_15",
+    "category": "category_15",
+    "amount": 22.5,
+    "timestamp": "2025-02-16T12:34:56.789Z"
+  },
+  {
+    "expenseId": "expenseId_16",
+    "category": "category_16",
+    "amount": 24.0,
+    "timestamp": "2025-02-17T12:34:56.789Z"
+  },
+  {
+    "expenseId": "expenseId_17",
+    "category": "category_17",
+    "amount": 25.5,
+    "timestamp": "2025-02-18T12:34:56.789Z"
+  },
+  {
+    "expenseId": "expenseId_18",
+    "category": "category_18",
+    "amount": 27.0,
+    "timestamp": "2025-02-19T12:34:56.789Z"
+  },
+  {
+    "expenseId": "expenseId_19",
+    "category": "category_19",
+    "amount": 28.5,
+    "timestamp": "2025-02-20T12:34:56.789Z"
+  },
+  {
+    "expenseId": "expenseId_20",
+    "category": "category_20",
+    "amount": 30.0,
+    "timestamp": "2025-02-21T12:34:56.789Z"
+  }
+]

@@ -1,0 +1,202 @@
+[
+  {
+    "productId": "productId_1",
+    "name": "name_1",
+    "description": "description_1",
+    "price": 1.5,
+    "rating": 1.5,
+    "stockQuantity": 10,
+    "category": "category_1",
+    "supplierId": "supplierId_1"
+  },
+  {
+    "productId": "productId_2",
+    "name": "name_2",
+    "description": "description_2",
+    "price": 3.0,
+    "rating": 3.0,
+    "stockQuantity": 20,
+    "category": "category_2",
+    "supplierId": "supplierId_2"
+  },
+  {
+    "productId": "productId_3",
+    "name": "name_3",
+    "description": "description_3",
+    "price": 4.5,
+    "rating": 4.5,
+    "stockQuantity": 30,
+    "category": "category_3",
+    "supplierId": "supplierId_3"
+  },
+  {
+    "productId": "productId_4",
+    "name": "name_4",
+    "description": "description_4",
+    "price": 6.0,
+    "rating": 6.0,
+    "stockQuantity": 40,
+    "category": "category_4",
+    "supplierId": "supplierId_4"
+  },
+  {
+    "productId": "productId_5",
+    "name": "name_5",
+    "description": "description_5",
+    "price": 7.5,
+    "rating": 7.5,
+    "stockQuantity": 50,
+    "category": "category_5",
+    "supplierId": "supplierId_5"
+  },
+  {
+    "productId": "productId_6",
+    "name": "name_6",
+    "description": "description_6",
+    "price": 9.0,
+    "rating": 9.0,
+    "stockQuantity": 60,
+    "category": "category_6",
+    "supplierId": "supplierId_6"
+  },
+  {
+    "productId": "productId_7",
+    "name": "name_7",
+    "description": "description_7",
+    "price": 10.5,
+    "rating": 10.5,
+    "stockQuantity": 70,
+    "category": "category_7",
+    "supplierId": "supplierId_7"
+  },
+  {
+    "productId": "productId_8",
+    "name": "name_8",
+    "description": "description_8",
+    "price": 12.0,
+    "rating": 12.0,
+    "stockQuantity": 80,
+    "category": "category_8",
+    "supplierId": "supplierId_8"
+  },
+  {
+    "productId": "productId_9",
+    "name": "name_9",
+    "description": "description_9",
+    "price": 13.5,
+    "rating": 13.5,
+    "stockQuantity": 90,
+    "category": "category_9",
+    "supplierId": "supplierId_9"
+  },
+  {
+    "productId": "productId_10",
+    "name": "name_10",
+    "description": "description_10",
+    "price": 15.0,
+    "rating": 15.0,
+    "stockQuantity": 100,
+    "category": "category_10",
+    "supplierId": "supplierId_10"
+  },
+  {
+    "productId": "productId_11",
+    "name": "name_11",
+    "description": "description_11",
+    "price": 16.5,
+    "rating": 16.5,
+    "stockQuantity": 110,
+    "category": "category_11",
+    "supplierId": "supplierId_11"
+  },
+  {
+    "productId": "productId_12",
+    "name": "name_12",
+    "description": "description_12",
+    "price": 18.0,
+    "rating": 18.0,
+    "stockQuantity": 120,
+    "category": "category_12",
+    "supplierId": "supplierId_12"
+  },
+  {
+    "productId": "productId_13",
+    "name": "name_13",
+    "description": "description_13",
+    "price": 19.5,
+    "rating": 19.5,
+    "stockQuantity": 130,
+    "category": "category_13",
+    "supplierId": "supplierId_13"
+  },
+  {
+    "productId": "productId_14",
+    "name": "name_14",
+    "description": "description_14",
+    "price": 21.0,
+    "rating": 21.0,
+    "stockQuantity": 140,
+    "category": "category_14",
+    "supplierId": "supplierId_14"
+  },
+  {
+    "productId": "productId_15",
+    "name": "name_15",
+    "description": "description_15",
+    "price": 22.5,
+    "rating": 22.5,
+    "stockQuantity": 150,
+    "category": "category_15",
+    "supplierId": "supplierId_15"
+  },
+  {
+    "productId": "productId_16",
+    "name": "name_16",
+    "description": "description_16",
+    "price": 24.0,
+    "rating": 24.0,
+    "stockQuantity": 160,
+    "category": "category_16",
+    "supplierId": "supplierId_16"
+  },
+  {
+    "productId": "productId_17",
+    "name": "name_17",
+    "description": "description_17",
+    "price": 25.5,
+    "rating": 25.5,
+    "stockQuantity": 170,
+    "category": "category_17",
+    "supplierId": "supplierId_17"
+  },
+  {
+    "productId": "productId_18",
+    "name": "name_18",
+    "description": "description_18",
+    "price": 27.0,
+    "rating": 27.0,
+    "stockQuantity": 180,
+    "category": "category_18",
+    "supplierId": "supplierId_18"
+  },
+  {
+    "productId": "productId_19",
+    "name": "name_19",
+    "description": "description_19",
+    "price": 28.5,
+    "rating": 28.5,
+    "stockQuantity": 190,
+    "category": "category_19",
+    "supplierId": "supplierId_19"
+  },
+  {
+    "productId": "productId_20",
+    "name": "name_20",
+    "description": "description_20",
+    "price": 30.0,
+    "rating": 30.0,
+    "stockQuantity": 200,
+    "category": "category_20",
+    "supplierId": "supplierId_20"
+  }
+]

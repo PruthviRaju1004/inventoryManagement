@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "GRN" ALTER COLUMN "grnNumber" SET DATA TYPE TEXT;

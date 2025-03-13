@@ -1,0 +1,142 @@
+[
+  {
+    "userId": "userId_1",
+    "name": "name_1",
+    "email": "email_1",
+    "password": "password_1",
+    "role": "ADMIN"
+  },
+  {
+    "userId": "userId_2",
+    "name": "name_2",
+    "email": "email_2",
+    "password": "password_2",
+    "role": "EMPLOYEE"
+  },
+  {
+    "userId": "userId_3",
+    "name": "name_3",
+    "email": "email_3",
+    "password": "password_3",
+    "role": "MANAGER"
+  },
+  {
+    "userId": "userId_4",
+    "name": "name_4",
+    "email": "email_4",
+    "password": "password_4",
+    "role": "USER"
+  },
+  {
+    "userId": "userId_5",
+    "name": "name_5",
+    "email": "email_5",
+    "password": "password_5",
+    "role": "ADMIN"
+  },
+  {
+    "userId": "userId_6",
+    "name": "name_6",
+    "email": "email_6",
+    "password": "password_6",
+    "role": "USER"
+  },
+  {
+    "userId": "userId_7",
+    "name": "name_7",
+    "email": "email_7",
+    "password": "password_7",
+    "role": "ADMIN"
+  },
+  {
+    "userId": "userId_8",
+    "name": "name_8",
+    "email": "email_8",
+    "password": "password_8",
+    "role": "USER"
+  },
+  {
+    "userId": "userId_9",
+    "name": "name_9",
+    "email": "email_9",
+    "password": "password_9",
+    "role": "ADMIN"
+  },
+  {
+    "userId": "userId_10",
+    "name": "name_10",
+    "email": "email_10",
+    "password": "password_10",
+    "role": "EMPLOYEE"
+  },
+  {
+    "userId": "userId_11",
+    "name": "name_11",
+    "email": "email_11",
+    "password": "password_11",
+    "role": "ADMIN"
+  },
+  {
+    "userId": "userId_12",
+    "name": "name_12",
+    "email": "email_12",
+    "password": "password_12",
+    "role": "EMPLOYEE"
+  },
+  {
+    "userId": "userId_13",
+    "name": "name_13",
+    "email": "email_13",
+    "password": "password_13",
+    "role": "MANAGER"
+  },
+  {
+    "userId": "userId_14",
+    "name": "name_14",
+    "email": "email_14",
+    "password": "password_14",
+    "role": "USER"
+  },
+  {
+    "userId": "userId_15",
+    "name": "name_15",
+    "email": "email_15",
+    "password": "password_15",
+    "role": "MANAGER"
+  },
+  {
+    "userId": "userId_16",
+    "name": "name_16",
+    "email": "email_16",
+    "password": "password_16",
+    "role": "USER"
+  },
+  {
+    "userId": "userId_17",
+    "name": "name_17",
+    "email": "email_17",
+    "password": "password_17",
+    "role": "ADMIN"
+  },
+  {
+    "userId": "userId_18",
+    "name": "name_18",
+    "email": "email_18",
+    "password": "password_18",
+    "role": "MANAGER"
+  },
+  {
+    "userId": "userId_19",
+    "name": "name_19",
+    "email": "email_19",
+    "password": "password_19",
+    "role": "USER"
+  },
+  {
+    "userId": "userId_20",
+    "name": "name_20",
+    "email": "email_20",
+    "password": "password_20",
+    "role": "EMPLOYEE"
+  }
+]

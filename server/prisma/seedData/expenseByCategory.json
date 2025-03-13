@@ -1,0 +1,142 @@
+[
+  {
+    "expenseByCategoryId": "expenseByCategoryId_1",
+    "expenseSummaryId": "expenseSummaryId_1",
+    "category": "category_1",
+    "amount": 15,
+    "date": "2025-02-02T12:34:56.789Z"
+  },
+  {
+    "expenseByCategoryId": "expenseByCategoryId_2",
+    "expenseSummaryId": "expenseSummaryId_2",
+    "category": "category_2",
+    "amount": 30,
+    "date": "2025-02-03T12:34:56.789Z"
+  },
+  {
+    "expenseByCategoryId": "expenseByCategoryId_3",
+    "expenseSummaryId": "expenseSummaryId_3",
+    "category": "category_3",
+    "amount": 45,
+    "date": "2025-02-04T12:34:56.789Z"
+  },
+  {
+    "expenseByCategoryId": "expenseByCategoryId_4",
+    "expenseSummaryId": "expenseSummaryId_4",
+    "category": "category_4",
+    "amount": 60,
+    "date": "2025-02-05T12:34:56.789Z"
+  },
+  {
+    "expenseByCategoryId": "expenseByCategoryId_5",
+    "expenseSummaryId": "expenseSummaryId_5",
+    "category": "category_5",
+    "amount": 75,
+    "date": "2025-02-06T12:34:56.789Z"
+  },
+  {
+    "expenseByCategoryId": "expenseByCategoryId_6",
+    "expenseSummaryId": "expenseSummaryId_6",
+    "category": "category_6",
+    "amount": 90,
+    "date": "2025-02-07T12:34:56.789Z"
+  },
+  {
+    "expenseByCategoryId": "expenseByCategoryId_7",
+    "expenseSummaryId": "expenseSummaryId_7",
+    "category": "category_7",
+    "amount": 105,
+    "date": "2025-02-08T12:34:56.789Z"
+  },
+  {
+    "expenseByCategoryId": "expenseByCategoryId_8",
+    "expenseSummaryId": "expenseSummaryId_8",
+    "category": "category_8",
+    "amount": 120,
+    "date": "2025-02-09T12:34:56.789Z"
+  },
+  {
+    "expenseByCategoryId": "expenseByCategoryId_9",
+    "expenseSummaryId": "expenseSummaryId_9",
+    "category": "category_9",
+    "amount": 135,
+    "date": "2025-02-10T12:34:56.789Z"
+  },
+  {
+    "expenseByCategoryId": "expenseByCategoryId_10",
+    "expenseSummaryId": "expenseSummaryId_10",
+    "category": "category_10",
+    "amount": 150,
+    "date": "2025-02-11T12:34:56.789Z"
+  },
+  {
+    "expenseByCategoryId": "expenseByCategoryId_11",
+    "expenseSummaryId": "expenseSummaryId_11",
+    "category": "category_11",
+    "amount": 165,
+    "date": "2025-02-12T12:34:56.789Z"
+  },
+  {
+    "expenseByCategoryId": "expenseByCategoryId_12",
+    "expenseSummaryId": "expenseSummaryId_12",
+    "category": "category_12",
+    "amount": 180,
+    "date": "2025-02-13T12:34:56.789Z"
+  },
+  {
+    "expenseByCategoryId": "expenseByCategoryId_13",
+    "expenseSummaryId": "expenseSummaryId_13",
+    "category": "category_13",
+    "amount": 195,
+    "date": "2025-02-14T12:34:56.789Z"
+  },
+  {
+    "expenseByCategoryId": "expenseByCategoryId_14",
+    "expenseSummaryId": "expenseSummaryId_14",
+    "category": "category_14",
+    "amount": 210,
+    "date": "2025-02-15T12:34:56.789Z"
+  },
+  {
+    "expenseByCategoryId": "expenseByCategoryId_15",
+    "expenseSummaryId": "expenseSummaryId_15",
+    "category": "category_15",
+    "amount": 225,
+    "date": "2025-02-16T12:34:56.789Z"
+  },
+  {
+    "expenseByCategoryId": "expenseByCategoryId_16",
+    "expenseSummaryId": "expenseSummaryId_16",
+    "category": "category_16",
+    "amount": 240,
+    "date": "2025-02-17T12:34:56.789Z"
+  },
+  {
+    "expenseByCategoryId": "expenseByCategoryId_17",
+    "expenseSummaryId": "expenseSummaryId_17",
+    "category": "category_17",
+    "amount": 255,
+    "date": "2025-02-18T12:34:56.789Z"
+  },
+  {
+    "expenseByCategoryId": "expenseByCategoryId_18",
+    "expenseSummaryId": "expenseSummaryId_18",
+    "category": "category_18",
+    "amount": 270,
+    "date": "2025-02-19T12:34:56.789Z"
+  },
+  {
+    "expenseByCategoryId": "expenseByCategoryId_19",
+    "expenseSummaryId": "expenseSummaryId_19",
+    "category": "category_19",
+    "amount": 285,
+    "date": "2025-02-20T12:34:56.789Z"
+  },
+  {
+    "expenseByCategoryId": "expenseByCategoryId_20",
+    "expenseSummaryId": "expenseSummaryId_20",
+    "category": "category_20",
+    "amount": 300,
+    "date": "2025-02-21T12:34:56.789Z"
+  }
+]

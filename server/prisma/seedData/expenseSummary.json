@@ -1,0 +1,102 @@
+[
+  {
+    "expenseSummaryId": "expenseSummaryId_1",
+    "totalExpenses": 1.5,
+    "date": "2025-02-02T12:34:56.789Z"
+  },
+  {
+    "expenseSummaryId": "expenseSummaryId_2",
+    "totalExpenses": 3.0,
+    "date": "2025-02-03T12:34:56.789Z"
+  },
+  {
+    "expenseSummaryId": "expenseSummaryId_3",
+    "totalExpenses": 4.5,
+    "date": "2025-02-04T12:34:56.789Z"
+  },
+  {
+    "expenseSummaryId": "expenseSummaryId_4",
+    "totalExpenses": 6.0,
+    "date": "2025-02-05T12:34:56.789Z"
+  },
+  {
+    "expenseSummaryId": "expenseSummaryId_5",
+    "totalExpenses": 7.5,
+    "date": "2025-02-06T12:34:56.789Z"
+  },
+  {
+    "expenseSummaryId": "expenseSummaryId_6",
+    "totalExpenses": 9.0,
+    "date": "2025-02-07T12:34:56.789Z"
+  },
+  {
+    "expenseSummaryId": "expenseSummaryId_7",
+    "totalExpenses": 10.5,
+    "date": "2025-02-08T12:34:56.789Z"
+  },
+  {
+    "expenseSummaryId": "expenseSummaryId_8",
+    "totalExpenses": 12.0,
+    "date": "2025-02-09T12:34:56.789Z"
+  },
+  {
+    "expenseSummaryId": "expenseSummaryId_9",
+    "totalExpenses": 13.5,
+    "date": "2025-02-10T12:34:56.789Z"
+  },
+  {
+    "expenseSummaryId": "expenseSummaryId_10",
+    "totalExpenses": 15.0,
+    "date": "2025-02-11T12:34:56.789Z"
+  },
+  {
+    "expenseSummaryId": "expenseSummaryId_11",
+    "totalExpenses": 16.5,
+    "date": "2025-02-12T12:34:56.789Z"
+  },
+  {
+    "expenseSummaryId": "expenseSummaryId_12",
+    "totalExpenses": 18.0,
+    "date": "2025-02-13T12:34:56.789Z"
+  },
+  {
+    "expenseSummaryId": "expenseSummaryId_13",
+    "totalExpenses": 19.5,
+    "date": "2025-02-14T12:34:56.789Z"
+  },
+  {
+    "expenseSummaryId": "expenseSummaryId_14",
+    "totalExpenses": 21.0,
+    "date": "2025-02-15T12:34:56.789Z"
+  },
+  {
+    "expenseSummaryId": "expenseSummaryId_15",
+    "totalExpenses": 22.5,
+    "date": "2025-02-16T12:34:56.789Z"
+  },
+  {
+    "expenseSummaryId": "expenseSummaryId_16",
+    "totalExpenses": 24.0,
+    "date": "2025-02-17T12:34:56.789Z"
+  },
+  {
+    "expenseSummaryId": "expenseSummaryId_17",
+    "totalExpenses": 25.5,
+    "date": "2025-02-18T12:34:56.789Z"
+  },
+  {
+    "expenseSummaryId": "expenseSummaryId_18",
+    "totalExpenses": 27.0,
+    "date": "2025-02-19T12:34:56.789Z"
+  },
+  {
+    "expenseSummaryId": "expenseSummaryId_19",
+    "totalExpenses": 28.5,
+    "date": "2025-02-20T12:34:56.789Z"
+  },
+  {
+    "expenseSummaryId": "expenseSummaryId_20",
+    "totalExpenses": 30.0,
+    "date": "2025-02-21T12:34:56.789Z"
+  }
+]

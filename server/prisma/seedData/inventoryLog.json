@@ -1,0 +1,143 @@
+[
+    {
+      "logId": "logId_1",
+      "productId": "productId_1",
+      "changeType": "PURCHASE",
+      "quantity": 10,
+      "timestamp": "2025-02-02T12:34:56.789Z"
+    },
+    {
+      "logId": "logId_2",
+      "productId": "productId_2",
+      "changeType": "SALE",
+      "quantity": 20,
+      "timestamp": "2025-02-03T12:34:56.789Z"
+    },
+    {
+      "logId": "logId_3",
+      "productId": "productId_3",
+      "changeType": "PURCHASE",
+      "quantity": 30,
+      "timestamp": "2025-02-04T12:34:56.789Z"
+    },
+    {
+      "logId": "logId_4",
+      "productId": "productId_4",
+      "changeType": "ADJUSTMENT",
+      "quantity": 40,
+      "timestamp": "2025-02-05T12:34:56.789Z"
+    },
+    {
+      "logId": "logId_5",
+      "productId": "productId_5",
+      "changeType": "ADJUSTMENT",
+      "quantity": 50,
+      "timestamp": "2025-02-06T12:34:56.789Z"
+    },
+    {
+      "logId": "logId_6",
+      "productId": "productId_6",
+      "changeType": "PURCHASE",
+      "quantity": 60,
+      "timestamp": "2025-02-07T12:34:56.789Z"
+    },
+    {
+      "logId": "logId_7",
+      "productId": "productId_7",
+      "changeType": "SALE",
+      "quantity": 70,
+      "timestamp": "2025-02-08T12:34:56.789Z"
+    },
+    {
+      "logId": "logId_8",
+      "productId": "productId_8",
+      "changeType": "ADJUSTMENT",
+      "quantity": 80,
+      "timestamp": "2025-02-09T12:34:56.789Z"
+    },
+    {
+      "logId": "logId_9",
+      "productId": "productId_9",
+      "changeType": "SALE",
+      "quantity": 90,
+      "timestamp": "2025-02-10T12:34:56.789Z"
+    },
+    {
+      "logId": "logId_10",
+      "productId": "productId_10",
+      "changeType": "ADJUSTMENT",
+      "quantity": 100,
+      "timestamp": "2025-02-11T12:34:56.789Z"
+    },
+    {
+      "logId": "logId_11",
+      "productId": "productId_11",
+      "changeType": "PURCHASE",
+      "quantity": 110,
+      "timestamp": "2025-02-12T12:34:56.789Z"
+    },
+    {
+      "logId": "logId_12",
+      "productId": "productId_12",
+      "changeType": "ADJUSTMENT",
+      "quantity": 120,
+      "timestamp": "2025-02-13T12:34:56.789Z"
+    },
+    {
+      "logId": "logId_13",
+      "productId": "productId_13",
+      "changeType": "SALE",
+      "quantity": 130,
+      "timestamp": "2025-02-14T12:34:56.789Z"
+    },
+    {
+      "logId": "logId_14",
+      "productId": "productId_14",
+      "changeType": "SALE",
+      "quantity": 140,
+      "timestamp": "2025-02-15T12:34:56.789Z"
+    },
+    {
+      "logId": "logId_15",
+      "productId": "productId_15",
+      "changeType": "ADJUSTMENT",
+      "quantity": 150,
+      "timestamp": "2025-02-16T12:34:56.789Z"
+    },
+    {
+      "logId": "logId_16",
+      "productId": "productId_16",
+      "changeType": "ADJUSTMENT",
+      "quantity": 160,
+      "timestamp": "2025-02-17T12:34:56.789Z"
+    },
+    {
+      "logId": "logId_17",
+      "productId": "productId_17",
+      "changeType": "PURCHASE",
+      "quantity": 170,
+      "timestamp": "2025-02-18T12:34:56.789Z"
+    },
+    {
+      "logId": "logId_18",
+      "productId": "productId_18",
+      "changeType": "SALE",
+      "quantity": 180,
+      "timestamp": "2025-02-19T12:34:56.789Z"
+    },
+    {
+      "logId": "logId_19",
+      "productId": "productId_19",
+      "changeType": "ADJUSTMENT",
+      "quantity": 190,
+      "timestamp": "2025-02-20T12:34:56.789Z"
+    },
+    {
+      "logId": "logId_20",
+      "productId": "productId_20",
+      "changeType": "PURCHASE",
+      "quantity": 200,
+      "timestamp": "2025-02-21T12:34:56.789Z"
+    }
+  ]
+  

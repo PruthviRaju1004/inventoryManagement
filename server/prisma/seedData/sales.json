@@ -1,0 +1,202 @@
+[
+  {
+    "saleId": "saleId_1",
+    "productId": "productId_1",
+    "userId": "userId_1",
+    "timestamp": "2025-02-02T12:34:56.789Z",
+    "quantity": 10,
+    "unitPrice": 1.5,
+    "totalAmount": 1.5,
+    "customerId": "customerId_1"
+  },
+  {
+    "saleId": "saleId_2",
+    "productId": "productId_2",
+    "userId": "userId_2",
+    "timestamp": "2025-02-03T12:34:56.789Z",
+    "quantity": 20,
+    "unitPrice": 3.0,
+    "totalAmount": 3.0,
+    "customerId": "customerId_2"
+  },
+  {
+    "saleId": "saleId_3",
+    "productId": "productId_3",
+    "userId": "userId_3",
+    "timestamp": "2025-02-04T12:34:56.789Z",
+    "quantity": 30,
+    "unitPrice": 4.5,
+    "totalAmount": 4.5,
+    "customerId": "customerId_3"
+  },
+  {
+    "saleId": "saleId_4",
+    "productId": "productId_4",
+    "userId": "userId_4",
+    "timestamp": "2025-02-05T12:34:56.789Z",
+    "quantity": 40,
+    "unitPrice": 6.0,
+    "totalAmount": 6.0,
+    "customerId": "customerId_4"
+  },
+  {
+    "saleId": "saleId_5",
+    "productId": "productId_5",
+    "userId": "userId_5",
+    "timestamp": "2025-02-06T12:34:56.789Z",
+    "quantity": 50,
+    "unitPrice": 7.5,
+    "totalAmount": 7.5,
+    "customerId": "customerId_5"
+  },
+  {
+    "saleId": "saleId_6",
+    "productId": "productId_6",
+    "userId": "userId_6",
+    "timestamp": "2025-02-07T12:34:56.789Z",
+    "quantity": 60,
+    "unitPrice": 9.0,
+    "totalAmount": 9.0,
+    "customerId": "customerId_6"
+  },
+  {
+    "saleId": "saleId_7",
+    "productId": "productId_7",
+    "userId": "userId_7",
+    "timestamp": "2025-02-08T12:34:56.789Z",
+    "quantity": 70,
+    "unitPrice": 10.5,
+    "totalAmount": 10.5,
+    "customerId": "customerId_7"
+  },
+  {
+    "saleId": "saleId_8",
+    "productId": "productId_8",
+    "userId": "userId_8",
+    "timestamp": "2025-02-09T12:34:56.789Z",
+    "quantity": 80,
+    "unitPrice": 12.0,
+    "totalAmount": 12.0,
+    "customerId": "customerId_8"
+  },
+  {
+    "saleId": "saleId_9",
+    "productId": "productId_9",
+    "userId": "userId_9",
+    "timestamp": "2025-02-10T12:34:56.789Z",
+    "quantity": 90,
+    "unitPrice": 13.5,
+    "totalAmount": 13.5,
+    "customerId": "customerId_9"
+  },
+  {
+    "saleId": "saleId_10",
+    "productId": "productId_10",
+    "userId": "userId_10",
+    "timestamp": "2025-02-11T12:34:56.789Z",
+    "quantity": 100,
+    "unitPrice": 15.0,
+    "totalAmount": 15.0,
+    "customerId": "customerId_10"
+  },
+  {
+    "saleId": "saleId_11",
+    "productId": "productId_11",
+    "userId": "userId_11",
+    "timestamp": "2025-02-12T12:34:56.789Z",
+    "quantity": 110,
+    "unitPrice": 16.5,
+    "totalAmount": 16.5,
+    "customerId": "customerId_11"
+  },
+  {
+    "saleId": "saleId_12",
+    "productId": "productId_12",
+    "userId": "userId_12",
+    "timestamp": "2025-02-13T12:34:56.789Z",
+    "quantity": 120,
+    "unitPrice": 18.0,
+    "totalAmount": 18.0,
+    "customerId": "customerId_12"
+  },
+  {
+    "saleId": "saleId_13",
+    "productId": "productId_13",
+    "userId": "userId_13",
+    "timestamp": "2025-02-14T12:34:56.789Z",
+    "quantity": 130,
+    "unitPrice": 19.5,
+    "totalAmount": 19.5,
+    "customerId": "customerId_13"
+  },
+  {
+    "saleId": "saleId_14",
+    "productId": "productId_14",
+    "userId": "userId_14",
+    "timestamp": "2025-02-15T12:34:56.789Z",
+    "quantity": 140,
+    "unitPrice": 21.0,
+    "totalAmount": 21.0,
+    "customerId": "customerId_14"
+  },
+  {
+    "saleId": "saleId_15",
+    "productId": "productId_15",
+    "userId": "userId_15",
+    "timestamp": "2025-02-16T12:34:56.789Z",
+    "quantity": 150,
+    "unitPrice": 22.5,
+    "totalAmount": 22.5,
+    "customerId": "customerId_15"
+  },
+  {
+    "saleId": "saleId_16",
+    "productId": "productId_16",
+    "userId": "userId_16",
+    "timestamp": "2025-02-17T12:34:56.789Z",
+    "quantity": 160,
+    "unitPrice": 24.0,
+    "totalAmount": 24.0,
+    "customerId": "customerId_16"
+  },
+  {
+    "saleId": "saleId_17",
+    "productId": "productId_17",
+    "userId": "userId_17",
+    "timestamp": "2025-02-18T12:34:56.789Z",
+    "quantity": 170,
+    "unitPrice": 25.5,
+    "totalAmount": 25.5,
+    "customerId": "customerId_17"
+  },
+  {
+    "saleId": "saleId_18",
+    "productId": "productId_18",
+    "userId": "userId_18",
+    "timestamp": "2025-02-19T12:34:56.789Z",
+    "quantity": 180,
+    "unitPrice": 27.0,
+    "totalAmount": 27.0,
+    "customerId": "customerId_18"
+  },
+  {
+    "saleId": "saleId_19",
+    "productId": "productId_19",
+    "userId": "userId_19",
+    "timestamp": "2025-02-20T12:34:56.789Z",
+    "quantity": 190,
+    "unitPrice": 28.5,
+    "totalAmount": 28.5,
+    "customerId": "customerId_19"
+  },
+  {
+    "saleId": "saleId_20",
+    "productId": "productId_20",
+    "userId": "userId_20",
+    "timestamp": "2025-02-21T12:34:56.789Z",
+    "quantity": 200,
+    "unitPrice": 30.0,
+    "totalAmount": 30.0,
+    "customerId": "customerId_20"
+  }
+]
