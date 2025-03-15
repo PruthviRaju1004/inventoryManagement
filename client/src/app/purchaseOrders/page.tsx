@@ -1,9 +1,9 @@
 "use client";
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { DataGrid, GridRenderCellParams } from "@mui/x-data-grid";
+import { useState, useCallback, useMemo } from "react";
+import { GridRenderCellParams } from "@mui/x-data-grid";
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { Pencil, Trash2 } from "lucide-react";
-import { useGetPurchaseOrdersQuery, useUpdatePurchaseOrderMutation, useDeletePurchaseOrderMutation } from "../../state/api";
+import { useGetPurchaseOrdersQuery, useDeletePurchaseOrderMutation, PurchaseOrder } from "../../state/api";
 import dynamic from "next/dynamic";
 import OrganizationSelector from "../{components}/organizationSelector/index";
 import DataTable from "../{components}/dataTable";
@@ -27,16 +27,17 @@ const statusColors: Record<string, { bg: string; text: string }> = {
 
 const PurchaseOrders = () => {
     const router = useRouter();
-    const { organizations, selectedOrg, setSelectedOrg } = useOrganizations();
+    const { selectedOrg, setSelectedOrg } = useOrganizations();
     const { data: purchaseOrders, isLoading } = useGetPurchaseOrdersQuery(selectedOrg ?? 0, { skip: !selectedOrg });
     const [deletePurchaseOrder] = useDeletePurchaseOrderMutation();
     const [open, setOpen] = useState(false);
-    const [editingPurchaeOrder, setEditingPurchaeOrder] = useState<any | null>(null);
+    const [editingPurchaeOrder, setEditingPurchaeOrder] = useState<PurchaseOrder | null>(null);
 
-    const handleOpen = useCallback((purchaseOrder = null) => {
+    const handleOpen = (purchaseOrder: PurchaseOrder | null = null) => {
+        console.log("purchaseOrder", purchaseOrder);
         setEditingPurchaeOrder(purchaseOrder);
         setOpen(true);
-    }, []);
+    };
 
     const handleClose = useCallback(() => {
         setEditingPurchaeOrder(null);
@@ -129,7 +130,7 @@ const PurchaseOrders = () => {
                 </div>
             ),
         },
-    ], [handleOpen, handleDeleteClick]);
+    ], [handleOpen, handleDeleteClick, router]);
 
     return (
         <div className="flex flex-col gap-4">

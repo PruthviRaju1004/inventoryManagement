@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { useParams } from "next/navigation";
-import { useGetGRNByIdQuery, GRN } from "../../../state/api"; // API Hook for fetching GRN details
+import { useGetGRNByIdQuery } from "../../../state/api"; // API Hook for fetching GRN details
 import { Box, Typography } from "@mui/material";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";

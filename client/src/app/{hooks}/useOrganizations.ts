@@ -6,10 +6,10 @@ const useOrganizations = () => {
     const [selectedOrg, setSelectedOrg] = useState<number | null>(null);
 
     useEffect(() => {
-        if ((organizations?.length ?? 0) > 0 && selectedOrg === null) {
-            setSelectedOrg(organizations?.[0]?.id ?? null);
+        if ((organizations?.length ?? 0) > 0) {
+            setSelectedOrg((prev) => prev ?? organizations?.[0]?.id ?? null);
         }
-    }, [organizations]);
+    }, [organizations]); // No need to include selectedOrg    
 
     return { organizations, selectedOrg, setSelectedOrg, isLoading };
 };

@@ -1,9 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useCreateSupplierSiteMutation, useUpdateSupplierSiteMutation } from "@/state/api";
+import { useCreateSupplierSiteMutation, useUpdateSupplierSiteMutation, SupplierSite } from "@/state/api";
 import { TextField } from "@mui/material";
 
-const SupplierSiteModal = ({ supplierSite, onClose, supplierId }: { supplierSite: any; onClose: () => void; supplierId: string }) => {
+const SupplierSiteModal = ({ supplierSite, onClose, supplierId }: { supplierSite: SupplierSite | null; onClose: () => void; supplierId: string }) => {
   const [formData, setFormData] = useState({
     name: "",
     siteCode: "",
@@ -27,8 +27,8 @@ const SupplierSiteModal = ({ supplierSite, onClose, supplierId }: { supplierSite
         contactPhone: supplierSite.contactPhone || "",
         address: supplierSite.address || "",
         contactName: supplierSite.contactName || "",
-        latitude: supplierSite.latitude || "",
-        longitude: supplierSite.longitude || "",
+        latitude: supplierSite.latitude?.toString() || "",
+        longitude: supplierSite.longitude?.toString() || "",
       });
     } else {
       setFormData({

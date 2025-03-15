@@ -10,7 +10,7 @@ import { useParams } from "next/navigation";
 const PurchaseOrderDetail = () => {
     const { id } = useParams();
     const { data: purchaseOrder, isLoading } = useGetPurchaseOrderByIdQuery(Number(id));
-    const [sendEmail, { isLoading: isSending }] = useSendEmailMutation();
+    const [sendEmail] = useSendEmailMutation();
     const [email, setEmail] = useState("");
     const pdfRef = useRef<HTMLDivElement>(null);
 
@@ -104,7 +104,7 @@ const PurchaseOrderDetail = () => {
                             <Typography sx={{ flex: 1 }}>{index + 1}</Typography>
                             <Typography sx={{ flex: 4 }}>{item.item.name}</Typography>
                             <Typography sx={{ flex: 2 }}>{item.quantity} {item.uom}</Typography>
-                            <Typography sx={{ flex: 2 }}>${Number(item.unitPrice).toFixed(2)}</Typography>
+                            <Typography sx={{ flex: 2 }}>${Number(item.supplierUnitPrice).toFixed(2)}</Typography>
                             <Typography sx={{ flex: 2 }}>${Number(item.totalPrice).toFixed(2)}</Typography>
                         </Box>
                     ))}

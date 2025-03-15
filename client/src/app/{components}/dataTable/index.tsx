@@ -2,10 +2,12 @@
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { Pencil, Trash2 } from "lucide-react";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface DataTableProps {
     rows: any[];
     columns: GridColDef[];
     loading: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onEdit: (row: any) => void;
     onDelete: (id: string) => void;
 }

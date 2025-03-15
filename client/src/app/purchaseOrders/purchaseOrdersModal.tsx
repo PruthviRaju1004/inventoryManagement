@@ -1,22 +1,22 @@
 import { useState, useMemo, useEffect } from "react";
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions, Button,
+  Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, MenuItem, Typography, List, ListItem, ListItemText
 } from "@mui/material";
-import { useGetSuppliersQuery, useCreatePurchaseOrderMutation, useGetSupplierItemsQuery, useUpdatePurchaseOrderMutation } from "../../state/api";
+import { useGetSuppliersQuery, useCreatePurchaseOrderMutation, useGetSupplierItemsQuery, useUpdatePurchaseOrderMutation, PurchaseOrder } from "../../state/api";
 
 const validStatusTransitions: Record<string, string[]> = {
-  PENDING: ["PENDING","APPROVED", "REJECTED", "CANCELLED"],
-  APPROVED: ["APPROVED","COMPLETED", "CANCELLED"],
+  PENDING: ["PENDING", "APPROVED", "REJECTED", "CANCELLED"],
+  APPROVED: ["APPROVED", "COMPLETED", "CANCELLED"],
   REJECTED: ["REJECTED"], // Cannot be changed
-  COMPLETED: ["COMPLETED","CLOSED"],
+  COMPLETED: ["COMPLETED", "CLOSED"],
   CANCELLED: ["CANCELLED"], // Cannot be changed
-  OPEN: ["OPEN","APPROVED", "REJECTED", "CANCELLED"],
+  OPEN: ["OPEN", "APPROVED", "REJECTED", "CANCELLED"],
   CLOSED: ["CLOSED"] // Final state
 };
 
 
-const PurchaseOrderModal = ({ purchaseOrder, organizationId, onClose }: { purchaseOrder: any; organizationId: number | null; onClose: () => void }) => {
+const PurchaseOrderModal = ({ purchaseOrder, organizationId, onClose }: { purchaseOrder: PurchaseOrder | null; organizationId: number | null; onClose: () => void }) => {
   const [supplierId, setSupplierId] = useState("");
   const [orderNumber, setOrderNumber] = useState("");
   const [orderDate, setOrderDate] = useState("");
@@ -32,6 +32,7 @@ const PurchaseOrderModal = ({ purchaseOrder, organizationId, onClose }: { purcha
   const [updatePurchaseOrder] = useUpdatePurchaseOrderMutation();
 
   const totalAmount = useMemo(() => {
+    console.log("selectedProducts", selectedProducts);
     return selectedProducts.reduce((sum, product) => sum + product.quantity * product.unitPrice, 0);
   }, [selectedProducts]);
   const formatDate = (date: string) => {
@@ -42,14 +43,20 @@ const PurchaseOrderModal = ({ purchaseOrder, organizationId, onClose }: { purcha
   useEffect(() => {
     if (purchaseOrder) {
       console.log(purchaseOrder)
-      setSupplierId(purchaseOrder.supplierId);
+      setSupplierId(purchaseOrder.supplierId.toString());
       setOrderNumber(purchaseOrder.orderNumber);
-      setOrderDate(purchaseOrder.orderDate ? formatDate(purchaseOrder.orderDate) : ""); 
+      setOrderDate(purchaseOrder.orderDate ? formatDate(purchaseOrder.orderDate) : "");
       setExpectedDate(purchaseOrder.expectedDate ? formatDate(purchaseOrder.expectedDate) : "");
-      setReceivedDate(purchaseOrder.receivedDate);
+      setReceivedDate(purchaseOrder.receivedDate || "");
       setStatus(purchaseOrder.status);
-      setRemarks(purchaseOrder.remarks);
-      setSelectedProducts(purchaseOrder.purchaseOrderItems || []);
+      setRemarks(purchaseOrder.remarks || "");
+      setSelectedProducts(purchaseOrder.purchaseOrderItems.map(item => ({
+        itemId: item.itemId,
+        itemName: item.item.name,
+        quantity: item.quantity,
+        unitPrice: item.supplierUnitPrice,
+        uom: item.uom
+      })) || []);
     }
   }, [purchaseOrder]);
   const handleSubmit = async () => {
@@ -76,15 +83,16 @@ const PurchaseOrderModal = ({ purchaseOrder, organizationId, onClose }: { purcha
           totalAmount: Number(totalAmount),
           purchaseOrderItems: selectedProducts.map(product => ({
             id: product.itemId,
+            itemId: product.itemId,
             quantity: product.quantity,
-            unitPrice: Number(product.unitPrice), // Convert before sending
+            // unitPrice: Number(product.unitPrice), // Convert before sending
             totalPrice: product.quantity * Number(product.unitPrice),
             uom: product.uom,
+            supplierUnitPrice: Number(product.unitPrice),
             item: {
               id: product.itemId,
               name: product.itemName,
               itemCode: "", // Add appropriate itemCode if available
-              totalAmount: product.quantity * Number(product.unitPrice),
             },
           })),
         }
@@ -93,7 +101,6 @@ const PurchaseOrderModal = ({ purchaseOrder, organizationId, onClose }: { purcha
       // Create purchase order
       await createPurchaseOrder({
         organizationId,
-        orderNumber: Number(orderNumber),
         supplierId: Number(supplierId),
         orderDate: orderDate ? new Date(orderDate).toISOString() : "",
         expectedDate: expectedDate ? new Date(expectedDate).toISOString() : undefined,
@@ -130,15 +137,17 @@ const PurchaseOrderModal = ({ purchaseOrder, organizationId, onClose }: { purcha
 
   return (
     <Dialog open onClose={onClose}>
-      <DialogTitle>Create Purchase Order</DialogTitle>
+      <DialogTitle>{purchaseOrder ? "Update Purchase Order" : "Create Purchase Order"}</DialogTitle>
       <DialogContent>
-        <TextField
-          label="Order Number"
-          value={orderNumber}
-          onChange={(e) => setOrderNumber(e.target.value)}
-          fullWidth
-          margin="dense"
-        />
+        {purchaseOrder &&
+          <TextField
+            label="Order Number"
+            value={orderNumber}
+            onChange={(e) => setOrderNumber(e.target.value)}
+            fullWidth
+            margin="dense"
+            disabled
+          />}
         <TextField
           select
           label="Supplier"
@@ -187,35 +196,25 @@ const PurchaseOrderModal = ({ purchaseOrder, organizationId, onClose }: { purcha
               </MenuItem>
             ))}
           </TextField>}
-
-        {/* <TextField
-          type="date"
-          // label="Received Date"
-          value={receivedDate}
-          onChange={(e) => setReceivedDate(e.target.value)}
-          fullWidth
-          margin="dense"
-        /> */}
         {supplierId && (
           <>
             <Typography variant="h6" sx={{ mt: 2 }}>Products from Supplier</Typography>
             <List>
               {supplierProducts.length > 0 ? (
                 supplierProducts.map((product) => {
-                  if (!product.item) return null;
-                  const selectedProduct = product.item ? selectedProducts.find((p) => p.itemId === product.item?.id) : null;
+                  if (!product.itemId) return null; // Fix: itemId is in the response, not product.item.id
+                  const selectedProduct = selectedProducts.find((p) => p.itemId === product.itemId);
+                  // console.log(product);
                   return (
-                    <ListItem key={product.item.id} sx={{ cursor: "pointer", backgroundColor: selectedProduct ? 'rgba(0, 0, 0, 0.08)' : 'inherit' }}>
-                      <ListItemText primary={product.item.name} secondary={`Price: ${product.item.costPrice}`} />
+                    <ListItem key={product.itemId} sx={{ cursor: "pointer", backgroundColor: selectedProduct ? 'rgba(0, 0, 0, 0.08)' : 'inherit' }}>
+                      <ListItemText primary={product.itemName} secondary={`Price: ${product.supply_price}`} />
                       <TextField
                         type="number"
                         label="Quantity"
                         value={selectedProduct?.quantity || ""}
                         onChange={(e) => {
                           const quantity = Math.max(0, Number(e.target.value));
-                          if (product.item) {
-                            handleQuantityChange(product.item.id, product.item.name, quantity, Number(product.item.costPrice), "PCS");
-                          }
+                          handleQuantityChange(product.itemId, product.itemName, quantity, Number(product.supply_price), "PCS");
                         }}
                         size="small"
                         sx={{ width: 80 }}
@@ -226,6 +225,7 @@ const PurchaseOrderModal = ({ purchaseOrder, organizationId, onClose }: { purcha
               ) : (
                 <Typography variant="body2" color="textSecondary">No products found.</Typography>
               )}
+
             </List>
           </>
         )}
@@ -236,7 +236,7 @@ const PurchaseOrderModal = ({ purchaseOrder, organizationId, onClose }: { purcha
       <DialogActions>
         <button type="button" onClick={onClose} className="mt-4 btn-cancel">Cancel</button>
         <button type="submit" onClick={handleSubmit} className="mt-4 btn-primary">
-          Submit
+          {purchaseOrder ? "Update" : "Create"}
         </button>
       </DialogActions>
     </Dialog>

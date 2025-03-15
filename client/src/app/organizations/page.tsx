@@ -2,10 +2,11 @@
 import { useState } from "react";
 import { DataGrid, GridRenderCellParams } from "@mui/x-data-grid";
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import {
   useGetOrganizationsQuery,
   useDeleteOrganizationMutation,
+  Organization
 } from "../../state/api";
 import OrganizationModal from "./organizationModal";
 
@@ -13,7 +14,7 @@ const Organizations = () => {
   const { data: organizations, isLoading } = useGetOrganizationsQuery();
   const [deleteOrganization] = useDeleteOrganizationMutation();
   const [open, setOpen] = useState(false);
-  const [editingOrg, setEditingOrg] = useState<any | null>(null);
+  const [editingOrg, setEditingOrg] = useState<Organization | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 

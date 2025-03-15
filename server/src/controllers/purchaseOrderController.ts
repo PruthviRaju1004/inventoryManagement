@@ -26,7 +26,7 @@ export const createPurchaseOrder = async (req: Request, res: Response): Promise<
             // This can be a more sophisticated generation logic if required
             return `PO-${Math.floor(Math.random() * 1000000)}`;
         };
-        const orderNumberToUse = orderNumber ?? generateOrderNumber();
+        const orderNumberToUse = generateOrderNumber();
         const newPurchaseOrder = await prisma.purchaseOrder.create({
             data: {
                 organizationId,
@@ -78,19 +78,38 @@ export const getPurchaseOrders = async (req: Request, res: Response): Promise<vo
         const purchaseOrders = await prisma.purchaseOrder.findMany({
             include: {
                 supplier: true,
-                purchaseOrderItems: { include: { item: true } },
+                purchaseOrderItems: {
+                    include: { 
+                        item: true, 
+                    },
+                },
             },
             where: { organizationId: Number(organizationId) }
         });
 
-        // Transform the response to flatten item properties while renaming to avoid conflicts
-        const formattedOrders = purchaseOrders.map(order => ({
-            ...order,
-            purchaseOrderItems: order.purchaseOrderItems.map(poItem => ({
-                ...poItem,
-                ...poItem.item, // Merge all item properties into purchaseOrderItems
-                itemId: poItem.item.id, // Rename item id to avoid confusion
-            }))
+        // Fetch supplier prices separately
+        const formattedOrders = await Promise.all(purchaseOrders.map(async (order) => {
+            const updatedItems = await Promise.all(order.purchaseOrderItems.map(async (poItem) => {
+                const supplierProduct = await prisma.supplierItem.findFirst({
+                    where: {
+                        supplierId: order.supplierId, // Find supplier's price for this item
+                        itemId: poItem.itemId,
+                    },
+                    select: { supply_price: true },
+                });
+
+                return {
+                    ...poItem,
+                    ...poItem.item,
+                    itemId: poItem.item.id,
+                    supplierUnitPrice: supplierProduct?.supply_price || null, // Assign supplier's unit price
+                };
+            }));
+
+            return {
+                ...order,
+                purchaseOrderItems: updatedItems,
+            };
         }));
 
         res.status(200).json(formattedOrders);
@@ -99,6 +118,7 @@ export const getPurchaseOrders = async (req: Request, res: Response): Promise<vo
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
 
 
 // Get Single Purchase Order by ID
@@ -151,11 +171,11 @@ export const updatePurchaseOrder = async (req: Request, res: Response): Promise<
             return;
         }
 
-        const { status, expectedDate, receivedDate, updatedBy } = req.body;
+        const { status, expectedDate, receivedDate, updatedBy, totalAmount, remarks } = req.body;
 
         const updatedPurchaseOrder = await prisma.purchaseOrder.update({
             where: { id: Number(id) },
-            data: { status, expectedDate, receivedDate, updatedBy },
+            data: { status, expectedDate, receivedDate, updatedBy, totalAmount: Number(totalAmount), remarks },
         });
 
         res.status(200).json({ message: "Purchase order updated successfully", purchaseOrder: updatedPurchaseOrder });

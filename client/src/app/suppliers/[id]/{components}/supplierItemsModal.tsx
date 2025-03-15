@@ -1,17 +1,16 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useLinkProductsToSupplierMutation, useUpdateSupplierItemMutation, useGetItemsQuery } from "@/state/api";
+import { useLinkProductsToSupplierMutation, useUpdateSupplierItemMutation, useGetItemsQuery, SupplierItem } from "@/state/api";
 import { TextField, MenuItem, Select, InputLabel, FormControl, CircularProgress, SelectChangeEvent } from "@mui/material";
 
 
-const SupplierItemModal = ({ supplierItem, onClose, supplierId, organizationId }: { supplierItem: any; onClose: () => void; supplierId: string; organizationId: string }) => {
+const SupplierItemModal = ({ supplierItem, onClose, supplierId, organizationId }: { supplierItem: SupplierItem | null; onClose: () => void; supplierId: string; organizationId: string }) => {
   const [formData, setFormData] = useState({
     itemId: "",
     supply_quantity: "",
     supply_price: "",
     effective_date: "",
     is_preferred: false,
-    created_by: "",
   });
 
   const { data: items, isLoading } = useGetItemsQuery(Number(organizationId) || 0); // Fetch items
@@ -26,7 +25,7 @@ const SupplierItemModal = ({ supplierItem, onClose, supplierId, organizationId }
         supply_price: supplierItem.supply_price || "",
         effective_date: supplierItem.effective_date || "",
         is_preferred: supplierItem.is_preferred || false,
-        created_by: supplierItem.created_by || "",
+        // created_by: supplierItem.created_by || "",
       });
     } else {
       setFormData({
@@ -35,7 +34,7 @@ const SupplierItemModal = ({ supplierItem, onClose, supplierId, organizationId }
         supply_price: "",
         effective_date: "",
         is_preferred: false,
-        created_by: "",
+        // created_by: "",
       });
     }
   }, [supplierItem]);
@@ -62,10 +61,10 @@ const SupplierItemModal = ({ supplierItem, onClose, supplierId, organizationId }
       effective_date: new Date(formData.effective_date), // Convert to date
     };
 
-    if (supplierItem?.id) {
+    if (supplierItem?.itemId) {
       await updateSupplierItem({ supplierId: Number(supplierId), itemId: supplierItem.itemId, data: apiData });
     } else {
-      await createSupplierItem({ ...apiData, itemId: Number(formData.itemId), effective_date: new Date(formData.effective_date).toISOString(), created_by: Number(formData.created_by) });
+      await createSupplierItem({ ...apiData, itemId: Number(formData.itemId), effective_date: new Date(formData.effective_date).toISOString() });
     }
     onClose();
   };
@@ -132,7 +131,7 @@ const SupplierItemModal = ({ supplierItem, onClose, supplierId, organizationId }
             />
             <label htmlFor="is_preferred">Is Preferred</label>
           </div>
-          <TextField
+          {/* <TextField
             type="text"
             name="created_by"
             value={formData.created_by}
@@ -140,7 +139,7 @@ const SupplierItemModal = ({ supplierItem, onClose, supplierId, organizationId }
             placeholder="Created By"
             className="w-full p-2 border rounded"
             required
-          />
+          /> */}
           <div className="flex justify-end gap-3 mt-4">
             <button type="button" onClick={onClose} className="mt-4 btn-cancel">
               Cancel

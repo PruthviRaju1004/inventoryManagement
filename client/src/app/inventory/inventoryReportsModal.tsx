@@ -1,9 +1,9 @@
 'use client';
 import { useState, useEffect } from "react";
 import { TextField, Typography, MenuItem } from "@mui/material";
-import { useCreateInventoryReportMutation, useUpdateInventoryReportMutation, useGetWarehousesQuery } from "@/state/api";
+import { useCreateInventoryReportMutation, useUpdateInventoryReportMutation, useGetWarehousesQuery, InventoryReport } from "@/state/api";
 
-const InventoryReports = ({ inventoryReport, organizationId, onClose }: { inventoryReport: any; organizationId: number | null; onClose: () => void }) => {
+const InventoryReports = ({ inventoryReport, organizationId, onClose }: { inventoryReport: InventoryReport; organizationId: number | null; onClose: () => void }) => {
     const [formData, setFormData] = useState(
         inventoryReport || {
             itemName: "",
@@ -41,19 +41,20 @@ const InventoryReports = ({ inventoryReport, organizationId, onClose }: { invent
 
     useEffect(() => {
         if (inventoryReport) {
-            const formatDate = (date: string | null) =>
+            const formatDate = (date: string | null | undefined) =>
                 date ? new Date(date).toISOString().split("T")[0] : "";
     
-            setFormData({
-                ...formData,
+            setFormData((prev) => ({
+                ...prev,
                 ...inventoryReport,
-                manufacturingDate: formatDate(inventoryReport.manufacturingDate ? inventoryReport.manufacturingDate : ""),
-                expiryDate: formatDate(inventoryReport.expiryDate ? inventoryReport.expiryDate : ""),
-                stockInwardDate: formatDate(inventoryReport.stockInwardDate ? inventoryReport.stockInwardDate : ""),
-                stockOutwardDate: formatDate(inventoryReport.stockOutwardDate ? inventoryReport.stockOutwardDate : ""),
-            });
+                manufacturingDate: formatDate(inventoryReport.manufacturingDate),
+                expiryDate: formatDate(inventoryReport.expiryDate),
+                stockInwardDate: formatDate(inventoryReport.stockInwardDate),
+                stockOutwardDate: formatDate(inventoryReport.stockOutwardDate),
+            }));
         }
     }, [inventoryReport]);
+    
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type } = e.target;
@@ -67,7 +68,7 @@ const InventoryReports = ({ inventoryReport, organizationId, onClose }: { invent
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const parseDate = (date: string) => (date ? new Date(date) : null);
+        const parseDate = (date: string | undefined) => (date ? new Date(date).toISOString() : undefined);
         const apiData = {
             ...formData,
             organizationId: organizationId || inventoryReport?.organizationId,
@@ -76,10 +77,10 @@ const InventoryReports = ({ inventoryReport, organizationId, onClose }: { invent
             batchNumber: formData.batchNumber,
             lotNumber: formData.lotNumber,
             serialNumber: formData.serialNumber,
-            manufacturingDate: parseDate(formData.manufacturingDate),
-            expiryDate: parseDate(formData.expiryDate),
-            stockInwardDate: parseDate(formData.stockInwardDate),
-            stockOutwardDate: parseDate(formData.stockOutwardDate),
+            manufacturingDate: parseDate(formData.manufacturingDate) || undefined,
+            expiryDate: parseDate(formData.expiryDate) || undefined,
+            stockInwardDate: parseDate(formData.stockInwardDate) || undefined,
+            stockOutwardDate: parseDate(formData.stockOutwardDate) || undefined,
             openingQuantity: formData.openingQuantity,
             currentQuantity: formData.currentQuantity,
             inwardQuantity: formData.inwardQuantity,
@@ -177,7 +178,7 @@ const InventoryReports = ({ inventoryReport, organizationId, onClose }: { invent
                             );
                             setFormData((prev: typeof formData) => ({
                                 ...prev,
-                                warehouseId: e.target.value,
+                                warehouseId: Number(e.target.value),
                                 warehouseName: selectedWarehouse ? selectedWarehouse.name : "",
                             }));
                         }}

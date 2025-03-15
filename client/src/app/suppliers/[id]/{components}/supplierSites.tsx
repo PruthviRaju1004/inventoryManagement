@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { useGetSupplierSitesQuery, useDeleteSupplierSiteMutation } from "../../../../state/api";
+import { useGetSupplierSitesQuery, useDeleteSupplierSiteMutation, SupplierSite } from "../../../../state/api";
 import { DataGrid, GridRenderCellParams } from "@mui/x-data-grid";
 import { Pencil, Trash2 } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -12,7 +12,7 @@ const SupplierSites = ({ supplierId }: { supplierId: string }) => {
     const { data: sites = [], isLoading } = useGetSupplierSitesQuery(numericSupplierId);
     const [deleteSupplierSite] = useDeleteSupplierSiteMutation();
     const [open, setOpen] = useState(false);
-    const [editingSupplierSite, setEditingSupplierSite] = useState<any | null>(null);
+    const [editingSupplierSite, setEditingSupplierSite] = useState<SupplierSite | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -37,7 +37,7 @@ const SupplierSites = ({ supplierId }: { supplierId: string }) => {
             setDeleteDialogOpen(false);
             setDeleteId(null);
         }
-    }, [deleteId, deleteSupplierSite]);
+    }, [deleteId, deleteSupplierSite, numericSupplierId]);
 
     const columns = useMemo(() => [
         { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 150 },

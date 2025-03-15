@@ -1,12 +1,12 @@
 'use client';
 import { useState, useEffect } from "react";
-import { TextField, Checkbox, FormControlLabel, MenuItem, Select, InputLabel, FormControl } from "@mui/material";
-import { useCreateItemMutation, useUpdateItemMutation } from "@/state/api";
+import { TextField, Checkbox, FormControlLabel, MenuItem } from "@mui/material";
+import { useCreateItemMutation, useUpdateItemMutation, Item } from "@/state/api";
 
-const itemTypes = ["INVENTORY", "NON-INVENTORY", "SERVICE"];
+const itemTypes = ["INVENTORY", "NON_INVENTORY", "SERVICE"];
 const costingMethods = ["FIFO", "LIFO", "AVERAGE", "STANDARD"];
 
-const ItemModal = ({ item, organizationId, onClose }: { item: any; organizationId: number | null; onClose: () => void }) => {
+const ItemModal = ({ item, organizationId, onClose }: { item: Item | null; organizationId: number | null; onClose: () => void }) => {
   const [formData, setFormData] = useState(
     item || {
       name: "",
@@ -53,6 +53,9 @@ const ItemModal = ({ item, organizationId, onClose }: { item: any; organizationI
       setFormData({
         ...formData,
         ...item,
+        leadTimeDays: Number(item.leadTimeDays),
+        reorderLevel: Number(item.reorderLevel),
+        safetyStockLevel: Number(item.safetyStockLevel),
       });
     }
   }, [item]);
@@ -87,16 +90,16 @@ const ItemModal = ({ item, organizationId, onClose }: { item: any; organizationI
     e.preventDefault();
     const apiData = {
       ...formData,
-      organizationId: organizationId || item?.organizationId,
-      unitPrice: formData.unitPrice ? parseFloat(formData.unitPrice) : null,
-      costPrice: formData.costPrice ? parseFloat(formData.costPrice) : null,
-      qtyPerUom: formData.qtyPerUom ? parseFloat(formData.qtyPerUom) : null,
-      commissionFactor: formData.commissionFactor ? parseFloat(formData.commissionFactor) : null,
+      organizationId: organizationId ?? item?.organizationId ?? 0,
+      unitPrice: formData.unitPrice ? formData.unitPrice.toString() : "",
+      costPrice: formData.costPrice ? formData.costPrice.toString() : "",
+      qtyPerUom: formData.qtyPerUom ? formData.qtyPerUom.toString() : "",
+      commissionFactor: formData.commissionFactor ? formData.commissionFactor.toString() : "",
       // expirationDate: expirationDate,
       leadTimeDays: Number(formData.leadTimeDays),
-      reorderLevel: Number(formData.recoderLevel),
+      reorderLevel: Number(formData.reorderLevel),
       safetyStockLevel: Number(formData.safetyStockLevel),
-      expirationDate: formData.expirationDate ? new Date(formData.expirationDate) : null,
+      expirationDate: formData.expirationDate ? new Date(formData.expirationDate).toISOString() : undefined,
     };
     // console.log(apiData);
     if (item?.id) {
@@ -137,13 +140,13 @@ const ItemModal = ({ item, organizationId, onClose }: { item: any; organizationI
           <TextField label="Color" name="color" value={formData.color} onChange={handleChange} fullWidth margin="normal" />
           <TextField label="Size" name="size" value={formData.size} onChange={handleChange} fullWidth margin="normal" />
           <FormControlLabel control={<Checkbox checked={formData.blocked} onChange={handleChange} name="blocked" />} label="Blocked" />
-          <TextField label="Unit Price" name="unitPrice" value={formData.unitPrice} onChange={handleDecimalChange} fullWidth margin="normal" required />
+          <TextField label="Unit Price" type="number" name="unitPrice" value={formData.unitPrice} onChange={handleDecimalChange} fullWidth margin="normal" required />
           <TextField select label="Costing Method" name="costingMethod" value={formData.costingMethod} onChange={handleChange} fullWidth margin="normal" required>
             {costingMethods.map((method) => (
               <MenuItem key={method} value={method}>{method}</MenuItem>
             ))}
           </TextField>
-          <TextField label="Cost Price" name="costPrice" value={formData.costPrice} onChange={handleDecimalChange} fullWidth margin="normal" required />
+          <TextField label="Cost Price" type="number" name="costPrice" value={formData.costPrice} onChange={handleDecimalChange} fullWidth margin="normal" required />
           <FormControlLabel control={<Checkbox checked={formData.commissionEligible} onChange={handleChange} name="commissionEligible" />} label="Commission Eligible" />
           <TextField label="Commission Factor" name="commissionFactor" value={formData.commissionFactor} onChange={handleDecimalChange} fullWidth margin="normal" />
           <TextField label="Business Unit Name" name="businessUnitName" value={formData.businessUnitName} onChange={handleChange} fullWidth margin="normal" />

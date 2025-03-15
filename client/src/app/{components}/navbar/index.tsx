@@ -1,28 +1,17 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ChevronDown, UserCircle, LogOut } from 'lucide-react';
-import { useAppDispatch, useAppSelector } from '@/app/redux';
-import { setIsDarkMode, setIsSidebarCollapsed } from '@/state';
+import { UserCircle, LogOut } from 'lucide-react';
 import { useRouter } from "next/navigation";
 import { useGetCurrentUserQuery } from '../../../state/api';
 import { Typography } from "@mui/material";
 
 type Props = {}
 
-const Navbar = (props: Props) => {
+const Navbar = () => {
     const router = useRouter();
-    const dispatch = useAppDispatch();
-    const { data: user, isLoading, isError } = useGetCurrentUserQuery();
-    const isSidebarCollapsed = useAppSelector((state) => state.global.isSidebarCollapsed);
-    const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
+    const { data: user } = useGetCurrentUserQuery();
     const [dropdownOpen, setDropdownOpen] = useState(false);
-    const toggleSidebar = () => {
-        dispatch(setIsSidebarCollapsed(!isSidebarCollapsed));
-    };
-    const toggleDarkMode = () => {
-        dispatch(setIsDarkMode(!isDarkMode));
-    };
     const handleLogout = () => {
         localStorage.removeItem("token"); // Remove token
         router.push("/login"); // Redirect to login

@@ -31,7 +31,7 @@ const createPurchaseOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
             // This can be a more sophisticated generation logic if required
             return `PO-${Math.floor(Math.random() * 1000000)}`;
         };
-        const orderNumberToUse = orderNumber !== null && orderNumber !== void 0 ? orderNumber : generateOrderNumber();
+        const orderNumberToUse = generateOrderNumber();
         const newPurchaseOrder = yield prisma.purchaseOrder.create({
             data: {
                 organizationId,
@@ -82,12 +82,28 @@ const getPurchaseOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const purchaseOrders = yield prisma.purchaseOrder.findMany({
             include: {
                 supplier: true,
-                purchaseOrderItems: { include: { item: true } },
+                purchaseOrderItems: {
+                    include: {
+                        item: true,
+                    },
+                },
             },
             where: { organizationId: Number(organizationId) }
         });
-        // Transform the response to flatten item properties while renaming to avoid conflicts
-        const formattedOrders = purchaseOrders.map(order => (Object.assign(Object.assign({}, order), { purchaseOrderItems: order.purchaseOrderItems.map(poItem => (Object.assign(Object.assign(Object.assign({}, poItem), poItem.item), { itemId: poItem.item.id }))) })));
+        // Fetch supplier prices separately
+        const formattedOrders = yield Promise.all(purchaseOrders.map((order) => __awaiter(void 0, void 0, void 0, function* () {
+            const updatedItems = yield Promise.all(order.purchaseOrderItems.map((poItem) => __awaiter(void 0, void 0, void 0, function* () {
+                const supplierProduct = yield prisma.supplierItem.findFirst({
+                    where: {
+                        supplierId: order.supplierId, // Find supplier's price for this item
+                        itemId: poItem.itemId,
+                    },
+                    select: { supply_price: true },
+                });
+                return Object.assign(Object.assign(Object.assign({}, poItem), poItem.item), { itemId: poItem.item.id, supplierUnitPrice: (supplierProduct === null || supplierProduct === void 0 ? void 0 : supplierProduct.supply_price) || null });
+            })));
+            return Object.assign(Object.assign({}, order), { purchaseOrderItems: updatedItems });
+        })));
         res.status(200).json(formattedOrders);
     }
     catch (error) {
@@ -134,10 +150,10 @@ const updatePurchaseOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
             res.status(400).json({ message: "Invalid purchase order ID" });
             return;
         }
-        const { status, expectedDate, receivedDate, updatedBy } = req.body;
+        const { status, expectedDate, receivedDate, updatedBy, totalAmount, remarks } = req.body;
         const updatedPurchaseOrder = yield prisma.purchaseOrder.update({
             where: { id: Number(id) },
-            data: { status, expectedDate, receivedDate, updatedBy },
+            data: { status, expectedDate, receivedDate, updatedBy, totalAmount: Number(totalAmount), remarks },
         });
         res.status(200).json({ message: "Purchase order updated successfully", purchaseOrder: updatedPurchaseOrder });
     }

@@ -144,7 +144,7 @@ export interface Item {
   inventoryGroup?: string;
   itemCategoryCode?: string;
   parentCategory?: string;
-  itemType?: string;
+  productType?: string;
   hsnSacCode?: string;
   gstCredit: boolean;
   make?: string;
@@ -185,7 +185,7 @@ export interface CreateItemPayload {
   inventoryGroup?: string;
   itemCategoryCode?: string;
   parentCategory?: string;
-  itemType?: string;
+  productType?: string;
   hsnSacCode?: string;
   gstCredit: boolean;
   make?: string;
@@ -260,14 +260,16 @@ export interface PurchaseOrder {
   purchaseOrderItems: {
     id: number;
     quantity: number;
-    unitPrice: number;
+    // unitPrice: number;
     totalPrice: number;
     uom: string;
+    itemId: number;
+    supplierUnitPrice: number;
     item: {
       id: number;
       name: string;
       itemCode: string;
-      totalAmount: number;
+      // totalAmount: number;
     };
   }[];
 }
@@ -278,7 +280,6 @@ export interface CreatePurchaseOrderPayload {
   orderDate: string;
   status: string;
   totalAmount: number;
-  orderNumber: number;
   expectedDate?: string;
   remarks?: string;
   purchaseOrderItems: {
@@ -293,6 +294,7 @@ export interface CreatePurchaseOrderPayload {
 
 export interface GRN {
   id: number;
+  grnId: number;
   organizationId: number;
   grnNumber: string;
   poId: number;
@@ -335,7 +337,7 @@ export interface CreateGRNPayload {
   grnDate: string;
   status: string;
   totalAmount: number;
-  grnNumber: string;
+  // grnNumber: string;
   remarks?: string;
   grnLineItems: {
     itemId: number;
@@ -356,11 +358,12 @@ export interface CreateGRNPayload {
 export interface SupplierItem {
   supplierId: number;
   itemId: number;
+  itemName: string;
+  itemCode: string;
   supply_quantity: string;
   supply_price: string;
   effective_date: string;
   is_preferred: boolean;
-  created_by: number;
   created_date: string;
   updated_by: number;
   updated_date: string;
@@ -375,7 +378,6 @@ export interface CreateSupplierItem {
   supply_price: string;
   effective_date: string;
   is_preferred: boolean;
-  created_by: number;
 }
 
 export interface InventoryReport {
@@ -457,7 +459,7 @@ export const api = createApi({
     },
   }),
   reducerPath: "api",
-  tagTypes: ["Organizations", "Suppliers", "Customers", "Warehouses", "Items", "SupplierSites", "PurchaseOrders", "GRNs", "Users", "InventoryReports"],
+  tagTypes: ["Organizations", "Suppliers", "Customers", "Warehouses", "Items", "SupplierItems","SupplierSites", "PurchaseOrders", "GRNs", "Users", "InventoryReports"],
   endpoints: (builder) => ({
     loginUser: builder.mutation<AuthResponse, LoginUser>({
       query: (credentials) => ({
@@ -543,7 +545,6 @@ export const api = createApi({
       }),
       invalidatesTags: ["Suppliers"],
     }),
-
     updateSupplier: builder.mutation<Supplier, { id: number; data: Partial<Supplier> }>({
       query: ({ id, data }) => ({
         url: `/suppliers/${id}`,
@@ -560,7 +561,7 @@ export const api = createApi({
       invalidatesTags: ["Suppliers"],
     }),
     linkProductsToSupplier: builder.mutation({
-      query: ({ supplierId, itemId, supply_quantity, supply_price, effective_date, is_preferred, created_by }: CreateSupplierItem) => ({
+      query: ({ supplierId, itemId, supply_quantity, supply_price, effective_date, is_preferred }: CreateSupplierItem) => ({
         url: `/suppliers/${supplierId}/items`,
         method: 'POST',
         body: {
@@ -570,12 +571,13 @@ export const api = createApi({
           supply_price,
           effective_date,
           is_preferred,
-          created_by
         },
       }),
+      invalidatesTags: ["SupplierItems"],
     }),
     getSupplierItems: builder.query<SupplierItem[], number>({
       query: (supplierId) => `suppliers/${supplierId}/items`,
+      providesTags: ["SupplierItems"],
     }),
     updateSupplierItem: builder.mutation({
       query: ({ supplierId, itemId, quantity, currency }) => ({
@@ -583,6 +585,7 @@ export const api = createApi({
         method: "POST",
         body: { itemId, quantity, currency },
       }),
+      invalidatesTags: ["SupplierItems"],
     }),
     getSupplierPurchaseOrders: builder.query<PurchaseOrder[], number>({
       query: (supplierId) => `/suppliers/${supplierId}/purchase-orders`, // Endpoint to fetch purchase orders by supplier ID

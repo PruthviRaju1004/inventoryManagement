@@ -1,11 +1,11 @@
 import { useState, useMemo, useEffect } from "react";
 import {
-    Dialog, DialogTitle, DialogContent, DialogActions, Button,
+    Dialog, DialogTitle, DialogContent, DialogActions,
     TextField, MenuItem, Typography, List, ListItem, ListItemText, Box
 } from "@mui/material";
 import {
-    useGetSuppliersQuery, useCreateGRNMutation, useGetSupplierItemsQuery, useGetPurchaseOrderByIdQuery,
-    useUpdateGRNMutation, useGetWarehousesQuery, useGetSupplierPurchaseOrdersQuery
+    useGetSuppliersQuery, useCreateGRNMutation, useGetPurchaseOrderByIdQuery,
+    useUpdateGRNMutation, useGetWarehousesQuery, useGetSupplierPurchaseOrdersQuery, GRN
 } from "../../state/api";
 
 const validStatusTransitions: Record<string, string[]> = {
@@ -30,14 +30,13 @@ const getStatusColor = (status: string) => {
     }
 };
 
-const GRNModal = ({ grn, organizationId, onClose }: { grn: any; organizationId: number | null; onClose: () => void }) => {
+const GRNModal = ({ grn, organizationId, onClose }: { grn: GRN | null; organizationId: number | null; onClose: () => void }) => {
     const [supplierId, setSupplierId] = useState("");
     const [supplierName, setSupplierName] = useState("");
     const [warehouseId, setWarehouseId] = useState("");
     const [warehouseName, setWarehouseName] = useState("");
     const [poId, setPoId] = useState("");
     const [grnDate, setGrnDate] = useState("");
-    const [receivedDate, setReceivedDate] = useState("");
     const [status, setStatus] = useState(grn?.status || "Draft");
     const [remarks, setRemarks] = useState("");
     const [grnNumber, setGrnNumber] = useState("");
@@ -58,7 +57,7 @@ const GRNModal = ({ grn, organizationId, onClose }: { grn: any; organizationId: 
     }[]>([]);
 
     const { data: suppliers = [] } = useGetSuppliersQuery(organizationId ?? 0);
-    const { data: supplierPurchaseOrders, error, isLoading } = useGetSupplierPurchaseOrdersQuery(
+    const { data: supplierPurchaseOrders } = useGetSupplierPurchaseOrdersQuery(
         Number(supplierId),
         { skip: !supplierId }
     );
@@ -81,23 +80,40 @@ const GRNModal = ({ grn, organizationId, onClose }: { grn: any; organizationId: 
 
     useEffect(() => {
         if (grn && suppliers.length > 0 && warehouses.length > 0) {
+            console.log("GRN");
             setGrnNumber(grn.grnNumber);
-            setSupplierId(grn.supplierId);
-            setPoId(grn.poId);
+            setSupplierId(grn.supplierId.toString());
+            setPoId(grn.poId.toString());
             setSupplierName(grn.supplierName);
-            setWarehouseId(grn.warehouseId);
+            setWarehouseId(grn.warehouseId.toString());
             setWarehouseName(grn.warehouseName);
             setGrnDate(grn.grnDate ? formatDate(grn.grnDate) : "");
-            setReceivedDate(grn.receivedDate);
             setStatus(grn.status);
-            setRemarks(grn.remarks);
-            setSelectedProducts(grn.grnItems || []);
+            setRemarks(grn.remarks || "");
+            setSelectedProducts(
+                grn.grnLineItems.map((item: any) => ({
+                    id: item.id,
+                    itemId: item.itemId,
+                    itemName: item.item.name,
+                    orderedQty: item.orderedQty,
+                    receivedQty: item.receivedQty,
+                    unitPrice: item.unitPrice,
+                    uom: item.uom,
+                    lineTotal: item.receivedQty * item.unitPrice,
+                    batchNumber: item.batchNumber || null,
+                    manufacturingDate: item.manufacturingDate || null,
+                    expiryDate: item.expiryDate || null,
+                    storageLocation: item.storageLocation || null,
+                    remarks: item.remarks || null
+                }))
+            );
         }
     }, [grn, suppliers, warehouses]);
 
     // Set selectedProducts to purchaseOrderItems when a purchase order is selected
     useEffect(() => {
-        if (purchaseOrderDetails?.purchaseOrderItems) {
+        if (!grn && purchaseOrderDetails?.purchaseOrderItems) {
+            console.log("Purchase Order Details");
             setSelectedProducts(
                 purchaseOrderDetails.purchaseOrderItems.map((item: any) => ({
                     id: item.grnLineItemId ?? undefined,
@@ -145,7 +161,7 @@ const GRNModal = ({ grn, organizationId, onClose }: { grn: any; organizationId: 
             grnLineItems: selectedProducts.map(product => {
                 return {
                     id: product.id ?? 0,
-                    grnId: grn?.grnId || 0,
+                    grnId: grn?.id || 0,
                     itemId: product.itemId,
                     itemName: product.itemName,
                     orderedQty: product.orderedQty,
@@ -180,14 +196,15 @@ const GRNModal = ({ grn, organizationId, onClose }: { grn: any; organizationId: 
         <Dialog open onClose={onClose}>
             <DialogTitle>{grn ? "Edit GRN" : "Create GRN"}</DialogTitle>
             <DialogContent>
-                <TextField
-                    label="GRN Number"
-                    value={grnNumber ? grnNumber : ""}
-                    onChange={(e) => setGrnNumber(e.target.value)}
-                    fullWidth
-                    margin="dense"
-                    disabled={grn ? true : false}
-                />
+                {grn &&
+                    <TextField
+                        label="GRN Number"
+                        value={grnNumber ? grnNumber : ""}
+                        onChange={(e) => setGrnNumber(e.target.value)}
+                        fullWidth
+                        margin="dense"
+                        disabled
+                    />}
                 <TextField
                     select
                     label="Supplier"

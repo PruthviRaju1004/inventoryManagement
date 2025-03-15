@@ -1,9 +1,9 @@
 "use client";
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { DataGrid, GridRenderCellParams } from "@mui/x-data-grid";
+import { useState, useCallback, useMemo } from "react";
+import { GridRenderCellParams } from "@mui/x-data-grid";
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { Pencil, Trash2 } from "lucide-react";
-import { useGetGRNsQuery, useDeleteGRNMutation } from "../../state/api";
+import { useGetGRNsQuery, useDeleteGRNMutation, GRN } from "../../state/api";
 import dynamic from "next/dynamic";
 import OrganizationSelector from "../{components}/organizationSelector/index";
 import DataTable from "../{components}/dataTable";
@@ -24,13 +24,13 @@ const statusColors: Record<string, { bg: string; text: string }> = {
 
 const Grns = () => {
     const router = useRouter();
-    const { organizations, selectedOrg, setSelectedOrg } = useOrganizations();
+    const { selectedOrg, setSelectedOrg } = useOrganizations();
     const { data: grns, isLoading } = useGetGRNsQuery(selectedOrg ?? 0, { skip: !selectedOrg });
     const [deleteGrn] = useDeleteGRNMutation();
     const [open, setOpen] = useState(false);
-    const [editingGrn, setEditingGrn] = useState<any | null>(null);
+    const [editingGrn, setEditingGrn] = useState<GRN | null>(null);
 
-    const handleOpen = useCallback((grn = null) => {
+    const handleOpen = useCallback((grn: GRN | null = null) => {
         setEditingGrn(grn);
         setOpen(true);
     }, []);
@@ -145,7 +145,7 @@ const Grns = () => {
                 </>
             ),
         },
-    ], [handleOpen, handleDeleteClick]);    
+    ], [handleOpen, handleDeleteClick, router]);    
 
     return (
         <div className="flex flex-col gap-4">

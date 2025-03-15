@@ -2,8 +2,9 @@
 import React, { useState, useEffect } from "react";
 import { TextField } from "@mui/material";
 import { useCreateCustomerMutation, useUpdateCustomerMutation } from "@/state/api";
+import { Customer } from "@/state/api";
 
-const CustomerModal = ({ customer, organizationId, onClose }: { customer: any; organizationId: number | null; onClose: () => void }) => {
+const CustomerModal = ({ customer, organizationId, onClose }: { customer: Customer | null; organizationId: number | null; onClose: () => void }) => {
   const [formData, setFormData] = useState({
     name: "",
     customerCode: "",
@@ -51,7 +52,7 @@ const CustomerModal = ({ customer, organizationId, onClose }: { customer: any; o
     e.preventDefault();
     const apiData = {
       ...formData,
-      organizationId: organizationId || customer?.organizationId, // Use selected org
+      organizationId: organizationId ?? customer?.organizationId ?? 0, // Use selected org or default to 0
     };
     if (customer?.id) {
       await updateCustomer({ id: customer.id, data: apiData });

@@ -115,9 +115,10 @@ export const deleteSupplier = async (req: Request, res: Response): Promise<void>
 export const linkProductsToSupplier = async (req: Request, res: Response): Promise<void> => {
     try {
         const { supplierId } = req.params;
+        const userId = (req as any).user.userId;
         const { itemId, supply_quantity, supply_price, effective_date, is_preferred, created_by } = req.body;
 
-        if (!supplierId || !itemId || !supply_price || !supply_quantity || !created_by) {
+        if (!supplierId || !itemId || !supply_price || !supply_quantity) {
             res.status(400).json({ message: "Invalid request data. Missing required fields." });
             return;
         }
@@ -141,7 +142,7 @@ export const linkProductsToSupplier = async (req: Request, res: Response): Promi
                 supply_quantity: parseFloat(supply_quantity),
                 effective_date: new Date(effective_date),
                 is_preferred: is_preferred ?? false,
-                updated_by: Number(created_by),
+                updated_by: Number(userId),
                 updated_date: new Date(),
             },
             create: {
@@ -151,9 +152,9 @@ export const linkProductsToSupplier = async (req: Request, res: Response): Promi
                 supply_quantity: parseFloat(supply_quantity),
                 effective_date: new Date(effective_date),
                 is_preferred: is_preferred ?? false,
-                created_by: Number(created_by),
+                created_by: Number(userId),
                 created_date: new Date(),
-                updated_by: Number(created_by),
+                updated_by: Number(userId),
                 updated_date: new Date(),
             },
         });

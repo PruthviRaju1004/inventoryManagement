@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
-import { Plus, Pencil, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import { Pencil, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import {
     flexRender,
     getCoreRowModel,
@@ -10,7 +10,7 @@ import {
     useReactTable,
     ColumnDef,
 } from "@tanstack/react-table";
-import { useGetWarehousesQuery, useDeleteWarehouseMutation } from "../../state/api";
+import { useGetWarehousesQuery, useDeleteWarehouseMutation, Warehouse } from "../../state/api";
 import dynamic from "next/dynamic";
 import OrganizationSelector from "../{components}/organizationSelector";
 import useOrganizations from "../{hooks}/useOrganizations";
@@ -22,14 +22,14 @@ const WarehousesModal = dynamic(() => import("./warehousesModal"), { ssr: false 
 
 const Warehouses = () => {
     const router = useRouter();
-    const { organizations, selectedOrg, setSelectedOrg } = useOrganizations();
-    const { data: warehouses, isLoading } = useGetWarehousesQuery(selectedOrg ?? 0, { skip: !selectedOrg });
+    const { selectedOrg, setSelectedOrg } = useOrganizations();
+    const { data: warehouses } = useGetWarehousesQuery(selectedOrg ?? 0, { skip: !selectedOrg });
     const [deleteWarehouse] = useDeleteWarehouseMutation();
     const [open, setOpen] = useState(false);
-    const [editingWarehouse, setEditingWarehouse] = useState<any | null>(null);
+    const [editingWarehouse, setEditingWarehouse] = useState<Warehouse | null>(null);
     const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
 
-    const handleOpen = (warehouse = null) => {
+    const handleOpen = (warehouse: Warehouse | null = null) => {
         setEditingWarehouse(warehouse);
         setOpen(true);
     };
@@ -46,7 +46,7 @@ const Warehouses = () => {
         setExpandedRows((prev) => ({ ...prev, [id]: !prev[id] }));
     };
 
-    const columns: ColumnDef<any>[] = [
+    const columns: ColumnDef<Warehouse>[] = [
         {
             id: "expand",
             header: () => null,
@@ -79,7 +79,7 @@ const Warehouses = () => {
                     <button onClick={() => handleOpen(row.original)} className="p-2 text-primary_btn_color rounded">
                         <Pencil size={16} />
                     </button>
-                    <button onClick={() => handleDeleteClick(row.original.id)} className="p-2 text-primary_btn_color rounded">
+                    <button onClick={() => handleDeleteClick(String(row.original.id))} className="p-2 text-primary_btn_color rounded">
                         <Trash2 size={16} />
                     </button>
                 </div>

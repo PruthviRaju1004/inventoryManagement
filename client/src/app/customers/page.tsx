@@ -9,7 +9,7 @@ import {
   DialogContentText,
   DialogTitle,
 } from "@mui/material";
-import { Plus, Pencil, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import {
   flexRender,
   getCoreRowModel,
@@ -18,6 +18,7 @@ import {
   ColumnDef,
 } from "@tanstack/react-table";
 import { useGetCustomersQuery, useDeleteCustomerMutation } from "../../state/api";
+import { Customer } from "@/state/api";
 import dynamic from "next/dynamic";
 import OrganizationSelector from "../{components}/organizationSelector/index";
 import useOrganizations from "../{hooks}/useOrganizations";
@@ -27,16 +28,16 @@ import React from "react";
 const CustomerModal = dynamic(() => import("./customersModal"), { ssr: false });
 
 const Customers = () => {
-  const { organizations, selectedOrg, setSelectedOrg } = useOrganizations();
-  const { data: customers, isLoading } = useGetCustomersQuery(selectedOrg ?? 0, {
+  const { selectedOrg, setSelectedOrg } = useOrganizations();
+  const { data: customers } = useGetCustomersQuery(selectedOrg ?? 0, {
     skip: !selectedOrg,
   });
   const [deleteCustomer] = useDeleteCustomerMutation();
   const [open, setOpen] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState<any | null>(null);
-  const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  // const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
 
-  const handleOpen = (customer = null) => {
+  const handleOpen = (customer: Customer | null = null) => {
     setEditingCustomer(customer);
     setOpen(true);
   };
@@ -49,11 +50,7 @@ const Customers = () => {
   const { deleteDialogOpen, setDeleteDialogOpen, handleDeleteClick, handleDeleteConfirm } =
     useDeleteDialog(async (id) => await deleteCustomer(Number(id)));
 
-  const toggleExpandRow = (id: number) => {
-    setExpandedRows((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const columns: ColumnDef<any>[] = [
+  const columns: ColumnDef<Customer>[] = [
     // {
     //   id: "expand",
     //   header: () => null,
@@ -81,7 +78,7 @@ const Customers = () => {
             <Pencil size={16} />
           </button>
           <button
-            onClick={() => handleDeleteClick(row.original.id)}
+            onClick={() => handleDeleteClick(String(row.original.id))}
             className="p-2 text-primary_btn_color rounded"
           >
             <Trash2 size={16} />
@@ -94,7 +91,7 @@ const Customers = () => {
   const table = useReactTable({
     data: customers || [],
     columns,
-    state: { expanded: expandedRows },
+    // state: { expanded: expandedRows },
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
   });
@@ -137,23 +134,6 @@ const Customers = () => {
                     </td>
                   ))}
                 </tr>
-
-                {/* Expanded Row */}
-                {/* {expandedRows[row.original.id] && (
-                  <tr key={`${row.id}-expanded`} className="bg-gray-100">
-                    <td colSpan={columns.length + 1} className="p-4">
-                      <p>
-                        <strong>Contact Name:</strong> {row.original.contactName}
-                      </p>
-                      <p>
-                        <strong>Payment Terms:</strong> {row.original.paymentTerms}
-                      </p>
-                      <p>
-                        <strong>Tax ID:</strong> {row.original.taxId}
-                      </p>
-                    </td>
-                  </tr>
-                )} */}
               </React.Fragment>
             ))}
           </tbody>

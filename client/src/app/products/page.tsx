@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
-import { Plus, Pencil, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import { Pencil, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import {
     flexRender,
     getCoreRowModel,
@@ -10,7 +10,7 @@ import {
     useReactTable,
     ColumnDef,
 } from "@tanstack/react-table";
-import { useGetItemsQuery, useDeleteItemMutation } from "../../state/api";
+import { useGetItemsQuery, useDeleteItemMutation, Item } from "../../state/api";
 import dynamic from "next/dynamic";
 import OrganizationSelector from "../{components}/organizationSelector";
 import useOrganizations from "../{hooks}/useOrganizations";
@@ -20,14 +20,14 @@ import React from "react";
 const ItemsModal = dynamic(() => import("./ItemsModal"), { ssr: false });
 
 const Items = () => {
-    const { organizations, selectedOrg, setSelectedOrg } = useOrganizations();
-    const { data: items, isLoading } = useGetItemsQuery(selectedOrg ?? 0, { skip: !selectedOrg });
+    const { selectedOrg, setSelectedOrg } = useOrganizations();
+    const { data: items } = useGetItemsQuery(selectedOrg ?? 0, { skip: !selectedOrg });
     const [deleteItem] = useDeleteItemMutation();
     const [open, setOpen] = useState(false);
-    const [editingItem, setEditingItem] = useState<any | null>(null);
+    const [editingItem, setEditingItem] = useState<Item | null>(null);
     const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
 
-    const handleOpen = (item = null) => {
+    const handleOpen = (item: Item | null = null) => {
         setEditingItem(item);
         setOpen(true);
     };
@@ -44,7 +44,7 @@ const Items = () => {
         setExpandedRows((prev) => ({ ...prev, [id]: !prev[id] }));
     };
 
-    const columns: ColumnDef<any>[] = [
+    const columns: ColumnDef<Item>[] = [
         {
             id: "expand",
             header: () => null,
@@ -72,7 +72,7 @@ const Items = () => {
                     <button onClick={() => handleOpen(row.original)} className="p-2 text-primary_btn_color rounded">
                         <Pencil size={16} />
                     </button>
-                    <button onClick={() => handleDeleteClick(row.original.id)} className="p-2 text-primary_btn_color rounded">
+                    <button onClick={() => handleDeleteClick(row.original.id.toString())} className="p-2 text-primary_btn_color rounded">
                         <Trash2 size={16} />
                     </button>
                 </div>

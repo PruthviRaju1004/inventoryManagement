@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
-import { Plus, Pencil, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import {
     flexRender,
     getCoreRowModel,
@@ -11,7 +11,7 @@ import {
     useReactTable,
     ColumnDef,
 } from "@tanstack/react-table";
-import { useGetSuppliersQuery, useDeleteSupplierMutation } from "../../state/api";
+import { useGetSuppliersQuery, useDeleteSupplierMutation, Supplier } from "../../state/api";
 import dynamic from "next/dynamic";
 import OrganizationSelector from "../{components}/organizationSelector";
 import useOrganizations from "../{hooks}/useOrganizations";
@@ -21,15 +21,15 @@ import React from "react";
 const SupplierModal = dynamic(() => import("./suppliersModal"), { ssr: false });
 
 const Suppliers = () => {
-    const { organizations, selectedOrg, setSelectedOrg } = useOrganizations();
-    const { data: suppliers, isLoading } = useGetSuppliersQuery(selectedOrg ?? 0, { skip: !selectedOrg });
+    const { selectedOrg, setSelectedOrg } = useOrganizations();
+    const { data: suppliers } = useGetSuppliersQuery(selectedOrg ?? 0, { skip: !selectedOrg });
     const [deleteSupplier] = useDeleteSupplierMutation();
     const [open, setOpen] = useState(false);
-    const [editingSupplier, setEditingSupplier] = useState<any | null>(null);
+    const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
     const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
     const router = useRouter();
 
-    const handleOpen = (supplier = null) => {
+    const handleOpen = (supplier: Supplier | null = null) => {
         setEditingSupplier(supplier);
         setOpen(true);
     };
@@ -42,11 +42,7 @@ const Suppliers = () => {
     const { deleteDialogOpen, setDeleteDialogOpen, handleDeleteClick, handleDeleteConfirm } =
         useDeleteDialog(async (id) => await deleteSupplier(Number(id)));
 
-    const toggleExpandRow = (id: number) => {
-        setExpandedRows((prev) => ({ ...prev, [id]: !prev[id] }));
-    };
-
-    const columns: ColumnDef<any>[] = [
+    const columns: ColumnDef<Supplier>[] = [
         // {
         //     id: "expand",
         //     header: () => null,
@@ -79,7 +75,7 @@ const Suppliers = () => {
                     <button onClick={() => handleOpen(row.original)} className="p-2 text-primary_btn_color rounded">
                         <Pencil size={16} />
                     </button>
-                    <button onClick={() => handleDeleteClick(row.original.id)} className="p-2 text-primary_btn_color rounded">
+                    <button onClick={() => handleDeleteClick(String(row.original.id))} className="p-2 text-primary_btn_color rounded">
                         <Trash2 size={16} />
                     </button>
                 </div>

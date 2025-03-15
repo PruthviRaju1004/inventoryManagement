@@ -12,7 +12,7 @@ export default function Home() {
     } else {
       router.push("/login"); // Redirect to login page if not logged in
     }
-  }, []);
+  }, [ router ]);
 
   return <div>Loading...</div>;
 }

@@ -1,9 +1,9 @@
   "use client";
   import React, { useState, useEffect } from "react";
-  import { useCreateWarehouseMutation, useUpdateWarehouseMutation } from "@/state/api";
+  import { useCreateWarehouseMutation, useUpdateWarehouseMutation, Warehouse } from "@/state/api";
   import { TextField } from "@mui/material";
 
-  const WarehousesModal = ({ warehouse, organizationId, onClose }: { warehouse: any; organizationId: number | null; onClose: () => void }) => {
+  const WarehousesModal = ({ warehouse, organizationId, onClose }: { warehouse: Warehouse | null; organizationId: number | null; onClose: () => void }) => {
     const [formData, setFormData] = useState({
       name: "",
       code: "",
@@ -62,7 +62,7 @@
 
       const apiData = {
         ...formData,
-        organizationId: organizationId ?? warehouse?.organizationId, // Preserve warehouse's org ID if no new selection
+        organizationId: organizationId ?? warehouse?.organizationId ?? 0, // Preserve warehouse's org ID if no new selection
         latitude: formData.latitude ? parseFloat(formData.latitude) : 0,
         longitude: formData.longitude ? parseFloat(formData.longitude) : 0,
         sqFoot: formData.sqFoot ? parseInt(formData.sqFoot, 10) : 0,
@@ -75,8 +75,9 @@
       if (warehouse?.id) {
         await updateWarehouse({ id: warehouse.id, data: apiData });
       } else {
-        await createWarehouse({ 
-          ...apiData, 
+        await createWarehouse({
+          ...apiData,
+          organizationId: organizationId ?? warehouse?.organizationId ?? 0, // Ensure organizationId is always a number
           isActive: true,
         });
       }

@@ -13,7 +13,7 @@ import {
     Package,
     ClipboardList
 } from "lucide-react";
-import Image from "next/image";
+// import Image from "next/image";
 import Link from "next/link";
 import { useDispatch } from 'react-redux';
 import { useAppSelector } from '@/app/redux';

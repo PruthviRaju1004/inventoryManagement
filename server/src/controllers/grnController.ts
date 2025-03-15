@@ -33,13 +33,16 @@ export const createGRN = async (req: Request, res: Response): Promise<void> => {
             res.status(400).json({ message: "Invalid user ID" });
             return;
         }
+        const generateOrderNumber = () => {
+            return `GRN-${Math.floor(Math.random() * 1000000)}`;
+        };
+        const orderNumberToUse = generateOrderNumber();
         // Create GRN
         const newGRN = await prisma.gRN.create({
             data: {
                 organizationId: Number(organizationId),
                 grnDate: new Date(grnDate),
-                // receivedDate: receivedDate ? new Date(receivedDate) : new Date(),
-                grnNumber: grnNumber,
+                grnNumber: orderNumberToUse,
                 poId: Number(poId),
                 poNumber,
                 supplierId: Number(supplierId),

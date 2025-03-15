@@ -10,7 +10,7 @@ import {
     useReactTable,
     ColumnDef,
 } from "@tanstack/react-table";
-import { useGetInventoryReportsQuery, useDeleteInventoryReportMutation } from "../../state/api";
+import { useGetInventoryReportsQuery, useDeleteInventoryReportMutation, InventoryReport } from "../../state/api";
 import dynamic from "next/dynamic";
 import OrganizationSelector from "../{components}/organizationSelector";
 import useOrganizations from "../{hooks}/useOrganizations";
@@ -20,14 +20,14 @@ import React from "react";
 const InventoryReportsModal = dynamic(() => import("./inventoryReportsModal"), { ssr: false });
 
 const InventoryReports = () => {
-    const { organizations, selectedOrg, setSelectedOrg } = useOrganizations();
-    const { data: inventoryReports, isLoading } = useGetInventoryReportsQuery(selectedOrg ?? 0, { skip: !selectedOrg });
+    const { selectedOrg, setSelectedOrg } = useOrganizations();
+    const { data: inventoryReports } = useGetInventoryReportsQuery(selectedOrg ?? 0, { skip: !selectedOrg });
     const [deleteInventoryReport] = useDeleteInventoryReportMutation();
     const [open, setOpen] = useState(false);
-    const [editingInventoryReport, setEditingInventoryReport] = useState<any | null>(null);
+    const [editingInventoryReport, setEditingInventoryReport] = useState<InventoryReport | null>(null);
     const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
 
-    const handleOpen = (inventoryReport = null) => {
+    const handleOpen = (inventoryReport: InventoryReport | null = null) => {
         setEditingInventoryReport(inventoryReport);
         setOpen(true);
     };
@@ -44,7 +44,7 @@ const InventoryReports = () => {
         setExpandedRows((prev) => ({ ...prev, [inventoryId]: !prev[inventoryId] }));
     };
 
-    const columns: ColumnDef<any>[] = [
+    const columns: ColumnDef<InventoryReport>[] = [
         {
             id: "expand",
             header: () => null,
@@ -74,7 +74,7 @@ const InventoryReports = () => {
                     <button onClick={() => handleOpen(row.original)} className="p-2 text-primary_btn_color rounded">
                         <Pencil size={16} />
                     </button>
-                    <button onClick={() => handleDeleteClick(row.original.inventoryId)} className="p-2 text-primary_btn_color rounded">
+                    <button onClick={() => handleDeleteClick(String(row.original.inventoryId))} className="p-2 text-primary_btn_color rounded">
                         <Trash2 size={16} />
                     </button>
                 </div>
@@ -153,7 +153,7 @@ const InventoryReports = () => {
             </div>
 
             {/* InventoryReports Modal */}
-            {open && <InventoryReportsModal inventoryReport={editingInventoryReport} organizationId={selectedOrg} onClose={handleClose} />}
+            {open && editingInventoryReport && <InventoryReportsModal inventoryReport={editingInventoryReport} organizationId={selectedOrg} onClose={handleClose} />}
 
             {/* Delete Confirmation Dialog */}
             <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>

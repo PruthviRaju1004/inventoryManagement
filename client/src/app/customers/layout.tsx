@@ -20,7 +20,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       } else {
         document.documentElement.classList.add("light");
       }
-  }, []);
+  }, [isDarkMode, router]);
 
   return (
     <div className={`${isDarkMode ? "dark" : "light"} flex bg-gray-50 text-gray-900 w-full min-h-screen`}>

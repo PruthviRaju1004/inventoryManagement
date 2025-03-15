@@ -1,9 +1,9 @@
 "use client"
 import { useState, useCallback, useMemo } from "react";
-import { useGetSupplierItemsQuery } from "../../../../state/api";
+import { useGetSupplierItemsQuery, SupplierItem, Item } from "../../../../state/api";
 import { DataGrid, GridRenderCellParams } from "@mui/x-data-grid";
 import dynamic from "next/dynamic";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil } from "lucide-react";
 
 const SupplierItemModal = dynamic(() => import("./supplierItemsModal"), { ssr: false });
 
@@ -11,16 +11,14 @@ const SupplierItems = ({ supplierId, organizationId }: { supplierId: string; org
     const { data: items = [], isLoading } = useGetSupplierItemsQuery(Number(supplierId));
     // const [deleteSupplierSite] = useDeleteSupplierSiteMutation();
     const [open, setOpen] = useState(false);
-    const [editingSupplierItems, setEditingSupplierItems] = useState<any | null>(null);
+    const [editingSupplierItems, setEditingSupplierItems] = useState<SupplierItem | null>(null);
     // const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     // const [deleteId, setDeleteId] = useState<string | null>(null);
 
     // Ensure each row has a unique `id`
-    const rows = items.map((item: { supplierId: number; itemId: number;[key: string]: any }) => ({
+    const rows = items.map((item: SupplierItem) => ({
         id: `${item.supplierId}-${item.itemId}`, // Unique ID combining supplier and item IDs
         ...item,
-        supplierId: item.supplierId.toString(),
-        itemId: item.itemId.toString(),
     }));
 
     const handleOpen = useCallback((supplier = null) => {

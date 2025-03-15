@@ -1,9 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useCreateSupplierMutation, useUpdateSupplierMutation } from "@/state/api";
+import { useCreateSupplierMutation, useUpdateSupplierMutation, Supplier } from "@/state/api";
 import { TextField } from "@mui/material";
 
-const SupplierModal = ({ supplier, organizationId, onClose }: { supplier: any; organizationId: number | null; onClose: () => void }) => {
+const SupplierModal = ({ supplier, organizationId, onClose }: { supplier: Supplier | null; organizationId: number | null; onClose: () => void }) => {
   const [formData, setFormData] = useState({
     name: "",
     supplierCode: "",
@@ -53,7 +53,7 @@ const SupplierModal = ({ supplier, organizationId, onClose }: { supplier: any; o
     e.preventDefault();
     const apiData = {
       ...formData,
-      organizationId: organizationId || supplier?.organizationId, // Use selected org
+      organizationId: organizationId ?? supplier?.organizationId ?? 0, // Ensure organizationId is always a number
     };
     if (supplier?.id) {
       await updateSupplier({ id: supplier.id, data: apiData });

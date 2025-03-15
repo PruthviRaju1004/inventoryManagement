@@ -11,12 +11,6 @@ export const isAuthenticated = () => {
     return false;
   };
   
-  export const registerUser = async (email, password) => {
-    // Replace with actual API call
-    localStorage.setItem("token", "mock-token");
-    return true;
-  };
-  
   export const logoutUser = () => {
     localStorage.removeItem("token");
   };
