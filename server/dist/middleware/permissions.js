@@ -1,5 +1,6 @@
 "use strict";
 // import { Request, Response, NextFunction } from "express";
+Object.defineProperty(exports, "__esModule", { value: true });
 // /**
 //  * Middleware to check if the user has the required permission.
 //  * @param requiredPermission The permission that is required to access the route.
