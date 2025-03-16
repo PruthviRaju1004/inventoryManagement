@@ -449,7 +449,7 @@ export interface CreateInventoryReportPayload {
 
 export const api = createApi({
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:8000",
+    baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000",
     prepareHeaders: (headers) => {
       const token = localStorage.getItem("token");
       if (token) {
