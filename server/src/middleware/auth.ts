@@ -17,7 +17,7 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     const token = authHeader.split(" ")[1];
     try {
         const decoded = jwt.verify(token, SECRET_KEY) as { userId: number; role: string; organizationId?: number };
-        console.log("Decoded token:", decoded); // Debugging log
+        console.error("Decoded token:", decoded); // Debugging log
 
         req.user = { 
             id: decoded.userId, 
