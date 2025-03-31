@@ -28,7 +28,7 @@ const Login = () => {
       if (response.user.organizationId) {
         localStorage.setItem("userOrg", response.user.organizationId!.toString());
       }
-      const userResponse = await fetch("https://inventorymanagement-production-6ff8.up.railway.app/auth/me", {
+      const userResponse = await fetch("https://inventory-management-dsbo.vercel.app/auth/me", {
         headers: { Authorization: `Bearer ${response.token}` },
       }).then((res) => res.json());
       if (!userResponse || !userResponse.email) {
