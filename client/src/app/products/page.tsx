@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { Pencil, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import {
@@ -15,17 +15,38 @@ import dynamic from "next/dynamic";
 import OrganizationSelector from "../{components}/organizationSelector";
 import useOrganizations from "../{hooks}/useOrganizations";
 import useDeleteDialog from "../{hooks}/useDeleteDialog";
+import { useAppSelector } from "../redux";
 import React from "react";
+import debounce from "lodash.debounce";
+import SearchBar from "../{components}/searchBar";
 
 const ItemsModal = dynamic(() => import("./ItemsModal"), { ssr: false });
 
 const Items = () => {
     const { selectedOrg, setSelectedOrg } = useOrganizations();
-    const { data: items } = useGetItemsQuery(selectedOrg ?? 0, { skip: !selectedOrg });
+    const [search, setSearch] = useState("");
+    const [category, setCategory] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const { data: items } = useGetItemsQuery({ organizationId: selectedOrg ?? 0, search: debouncedSearch, category },
+        { skip: !selectedOrg });
     const [deleteItem] = useDeleteItemMutation();
     const [open, setOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<Item | null>(null);
     const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
+    const user = useAppSelector((state) => state.user);
+    const userRole = user?.roleId || 4;
+    const filteredItems = useMemo(() => {
+        return items?.filter((item) =>
+            item.name.toLowerCase().includes(search.toLowerCase()) ||
+            item.itemCode.toLowerCase().includes(search.toLowerCase())
+        ) || [];
+    }, [items, search]);
+
+    const debouncedSetSearch = useMemo(() => debounce(setDebouncedSearch, 500), []);
+
+    useEffect(() => {
+        debouncedSetSearch(search);
+    }, [search, debouncedSetSearch]);
 
     const handleOpen = (item: Item | null = null) => {
         setEditingItem(item);
@@ -44,11 +65,11 @@ const Items = () => {
         setExpandedRows((prev) => ({ ...prev, [id]: !prev[id] }));
     };
 
-    const columns: ColumnDef<Item>[] = [
+    const columns = useMemo<ColumnDef<Item>[]>(() => [
         {
             id: "expand",
             header: () => null,
-            cell: ({ row }) => (
+            cell: ({ row }: { row: any }) => (
                 <button onClick={() => toggleExpandRow(row.original.id)} className="p-2 text-gray-500">
                     {expandedRows[row.original.id] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>
@@ -59,29 +80,37 @@ const Items = () => {
         { accessorKey: "baseUom", header: "Base UOM" },
         { accessorKey: "unitPrice", header: "Unit Price" },
         { accessorKey: "costPrice", header: "Cost Price" },
-        { accessorKey: "color", header: "Color"},
-        { accessorKey: "costingMethod", header: "Costing Method"},
-        {accessorKey: "hsnSacCode", header: "HSNSAC Code"},
-        {accessorKey: "type", header: "Type"},
-        {accessorKey: "safetyStockLevel", header: "Safety Stock Level"},
-        {
-            id: "actions",
-            header: "Actions",
-            cell: ({ row }) => (
-                <div className="flex gap-2">
-                    <button onClick={() => handleOpen(row.original)} className="p-2 text-primary_btn_color rounded">
-                        <Pencil size={16} />
-                    </button>
-                    <button onClick={() => handleDeleteClick(row.original.id.toString())} className="p-2 text-primary_btn_color rounded">
-                        <Trash2 size={16} />
-                    </button>
-                </div>
-            ),
-        },
-    ];
+        { accessorKey: "color", header: "Color" },
+        { accessorKey: "costingMethod", header: "Costing Method" },
+        { accessorKey: "hsnSacCode", header: "HSNSAC Code" },
+        { accessorKey: "type", header: "Type" },
+        { accessorKey: "safetyStockLevel", header: "Safety Stock Level" },
+        ...(userRole !== 4
+            ? [
+                {
+                    id: "actions",
+                    header: "Actions",
+                    cell: ({ row }: { row: any }) => (
+                        <div className="flex gap-2">
+                            {userRole !== 4 && (
+                                <button onClick={() => handleOpen(row.original)} className="p-2 text-primary_btn_color rounded">
+                                    <Pencil size={16} />
+                                </button>
+                            )}
+                            {userRole !== 4 && userRole !== 3 && (
+                                <button onClick={() => handleDeleteClick(row.original.id.toString())} className="p-2 text-primary_btn_color rounded">
+                                    <Trash2 size={16} />
+                                </button>
+                            )}
+                        </div>
+                    ),
+                },
+            ]
+            : [])
+    ], [userRole, expandedRows]);
 
     const table = useReactTable({
-        data: items || [],
+        data: filteredItems,
         columns,
         state: { expanded: expandedRows },
         getCoreRowModel: getCoreRowModel(),
@@ -90,13 +119,39 @@ const Items = () => {
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="flex justify-between gap-4">
-                <div>
-                    <OrganizationSelector selectedOrg={selectedOrg} onChange={setSelectedOrg} />
+            <h1 className="text-2xl font-semibold">Items</h1>
+            <div className="flex justify-between gap-4 align-center">
+                <div className="flex gap-4">
+                    {!localStorage.getItem("userOrg") &&
+                        <div>
+                            <OrganizationSelector selectedOrg={selectedOrg} onChange={setSelectedOrg} />
+                        </div>}
+                    <div>
+                        <SearchBar onSearch={setSearch} placeholder="Search items by Item Name, Item Code or Description" />
+                    </div>
                 </div>
-                <button onClick={() => handleOpen()} className="mt-4 bg-primary_btn_color text-white font-medium text-base px-4 h-12 rounded-sm">
-                    Create Item
-                </button>
+
+                {/* Category Filter */}
+                {/* <TextField
+                    label="Category"
+                    variant="outlined"
+                    size="small"
+                    select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="w-1/4"
+                >
+                    <MenuItem value="">All</MenuItem>
+                    <MenuItem value="electronics">Electronics</MenuItem>
+                    <MenuItem value="footwear">Footwear</MenuItem>
+                    <MenuItem value="clothing">Clothing</MenuItem>
+                </TextField> */}
+
+                {userRole !== 4 &&
+                    <button onClick={() => handleOpen()} className="bg-primary_btn_color text-white font-medium text-base px-4 h-12 rounded-sm">
+                        Create Item
+                    </button>
+                }
             </div>
 
             {/* Table */}

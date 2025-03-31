@@ -140,20 +140,20 @@ const ItemModal = ({ item, organizationId, onClose }: { item: Item | null; organ
           <TextField label="Color" name="color" value={formData.color} onChange={handleChange} fullWidth margin="normal" />
           <TextField label="Size" name="size" value={formData.size} onChange={handleChange} fullWidth margin="normal" />
           <FormControlLabel control={<Checkbox checked={formData.blocked} onChange={handleChange} name="blocked" />} label="Blocked" />
-          <TextField label="Unit Price" type="number" name="unitPrice" value={formData.unitPrice} onChange={handleDecimalChange} fullWidth margin="normal" required />
+          <TextField label="Unit Price" type="number" inputMode="numeric" onWheel={(e) => (e.target as HTMLInputElement).blur()} name="unitPrice" value={formData.unitPrice} onChange={handleDecimalChange} fullWidth margin="normal" required />
           <TextField select label="Costing Method" name="costingMethod" value={formData.costingMethod} onChange={handleChange} fullWidth margin="normal" required>
             {costingMethods.map((method) => (
               <MenuItem key={method} value={method}>{method}</MenuItem>
             ))}
           </TextField>
-          <TextField label="Cost Price" type="number" name="costPrice" value={formData.costPrice} onChange={handleDecimalChange} fullWidth margin="normal" required />
+          <TextField label="Cost Price" type="number" inputMode="numeric" onWheel={(e) => (e.target as HTMLInputElement).blur()} name="costPrice" value={formData.costPrice} onChange={handleDecimalChange} fullWidth margin="normal" required />
           <FormControlLabel control={<Checkbox checked={formData.commissionEligible} onChange={handleChange} name="commissionEligible" />} label="Commission Eligible" />
           <TextField label="Commission Factor" name="commissionFactor" value={formData.commissionFactor} onChange={handleDecimalChange} fullWidth margin="normal" />
           <TextField label="Business Unit Name" name="businessUnitName" value={formData.businessUnitName} onChange={handleChange} fullWidth margin="normal" />
-          <TextField label="Lead Time Days" type="number" name="leadTimeDays" value={formData.leadTimeDays} onChange={handleChange} fullWidth margin="normal" />
+          <TextField label="Lead Time Days" type="number" inputMode="numeric" onWheel={(e) => (e.target as HTMLInputElement).blur()} name="leadTimeDays" value={formData.leadTimeDays} onChange={handleChange} fullWidth margin="normal" />
           <TextField label="Barcode" name="barcode" value={formData.barcode} onChange={handleChange} fullWidth margin="normal" />
-          <TextField label="Recorder Level" type="number" name="reorderLevel" value={formData.reorderLevel} onChange={handleChange} fullWidth margin="normal" />
-          <TextField label="Safety Stock Level" type="number" name="safetyStockLevel" value={formData.safetyStockLevel} onChange={handleChange} fullWidth margin="normal" />
+          <TextField label="Recorder Level" type="number" inputMode="numeric" onWheel={(e) => (e.target as HTMLInputElement).blur()} name="reorderLevel" value={formData.reorderLevel} onChange={handleChange} fullWidth margin="normal" />
+          <TextField label="Safety Stock Level" type="number" inputMode="numeric" onWheel={(e) => (e.target as HTMLInputElement).blur()} name="safetyStockLevel" value={formData.safetyStockLevel} onChange={handleChange} fullWidth margin="normal" />
           <h2>Expiration Date</h2>
           <TextField
             type="date"
