@@ -26,12 +26,13 @@ export const login = async (req: Request, res: Response): Promise<void> => {
             return;
         }
         const role = user.role?.name || "viewer";
-        const organizationId = user.organizationId || undefined;
+        const organizationId = user.organizationId || null;
         const token = jwt.sign(
             { userId: user.id, role, organizationId },
             SECRET_KEY,
             { expiresIn: "12h" }
         );
+        console.log("toekn", token);
         res.status(200).json({
             message: "Login successful",
             token,
