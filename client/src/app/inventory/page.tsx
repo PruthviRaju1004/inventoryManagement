@@ -15,6 +15,7 @@ import dynamic from "next/dynamic";
 import OrganizationSelector from "../{components}/organizationSelector";
 import useOrganizations from "../{hooks}/useOrganizations";
 import useDeleteDialog from "../{hooks}/useDeleteDialog";
+import { useAppSelector } from "../redux";
 import React from "react";
 
 const InventoryReportsModal = dynamic(() => import("./inventoryReportsModal"), { ssr: false });
@@ -26,6 +27,8 @@ const InventoryReports = () => {
     const [open, setOpen] = useState(false);
     const [editingInventoryReport, setEditingInventoryReport] = useState<InventoryReport | null>(null);
     const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
+    const user = useAppSelector((state) => state.user);
+    const userRole = user?.roleId || 4;
 
     const handleOpen = (inventoryReport: InventoryReport | null = null) => {
         setEditingInventoryReport(inventoryReport);
@@ -48,7 +51,7 @@ const InventoryReports = () => {
         {
             id: "expand",
             header: () => null,
-            cell: ({ row }) => (
+            cell: ({ row }: { row: any }) => (
                 <button onClick={() => toggleExpandRow(row.original.inventoryId)} className="p-2 text-gray-500">
                     {expandedRows[row.original.inventoryId] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>
@@ -56,30 +59,45 @@ const InventoryReports = () => {
         },
         { accessorKey: "itemName", header: "Item Name" },
         { accessorKey: "sku", header: "SKU" },
-        { accessorKey: "openingQuantity", header: "Opening Quantity" },
-        { accessorKey: "currentQuantity", header: "Current Quantity" },
-        { accessorKey: "inwardQuantity", header: "Inward Quantity" },
-        { accessorKey: "outwardQuantity", header: "Outward Quantity" },
-        { accessorKey: "committedQuantity", header: "Committed Quantity" },
-        { accessorKey: "availableQuantity", header: "Available Quantity" },
-        { accessorKey: "damagedQuantity", header: "Damaged Quantity" },
-        { accessorKey: "unitCost", header: "Unit Cost"},
-        { accessorKey: "totalValue", header: "Total Value"},
-        { accessorKey: "warehouseName", header: "Warehouse Name"},
-        {
-            id: "actions",
-            header: "Actions",
-            cell: ({ row }) => (
-                <div className="flex gap-2">
-                    <button onClick={() => handleOpen(row.original)} className="p-2 text-primary_btn_color rounded">
-                        <Pencil size={16} />
-                    </button>
-                    <button onClick={() => handleDeleteClick(String(row.original.inventoryId))} className="p-2 text-primary_btn_color rounded">
-                        <Trash2 size={16} />
-                    </button>
-                </div>
-            ),
-        },
+
+        { accessorKey: "lotNumber", header: "Lot Number" },
+        { accessorKey: "batchNumber", header: "Batch Number" },
+        { accessorKey: "serialNumber", header: "Serial Number" },
+        // { accessorKey: "outwardQuantity", header: "Outward Quantity" },
+        // { accessorKey: "committedQuantity", header: "Committed Quantity" },
+        { accessorKey: "providedQuantity", header: "Available Quantity" },
+        // { accessorKey: "damagedQuantity", header: "Damaged Quantity" },
+        { accessorKey: "costPerUnit", header: "Cost Price" },
+        { accessorKey: "sellingPrice", header: "Selling Price" },
+        { accessorKey: "warehouseName", header: "Warehouse Name" },
+        { accessorKey: "subWarehouseName", header: "Sub Warehouse Name" },
+        { accessorKey: "binLocation", header: "Bin Location" },
+        ...(userRole !== 4
+            ? [
+                {
+                    id: "actions",
+                    header: "Actions",
+                    cell: ({ row }: { row: any }) => (
+                        <div className="flex gap-2">
+                            {userRole !== 4 && (
+                                <button
+                                    onClick={() => handleOpen(row.original)}
+                                    className="p-2 text-primary_btn_color rounded">
+                                    <Pencil size={16} />
+                                </button>
+                            )}
+                            {userRole !== 4 && userRole !== 3 && (
+                                <button
+                                    onClick={() => handleDeleteClick(String(row.original.inventoryId))}
+                                    className="p-2 text-primary_btn_color rounded">
+                                    <Trash2 size={16} />
+                                </button>
+                            )}
+                        </div>
+                    ),
+                },
+            ]
+            : [])
     ];
 
     const table = useReactTable({
@@ -92,13 +110,17 @@ const InventoryReports = () => {
 
     return (
         <div className="flex flex-col gap-4">
+        <h1 className="text-2xl font-semibold">Inventory</h1>
             <div className="flex justify-between gap-4">
-                <div>
-                    <OrganizationSelector selectedOrg={selectedOrg} onChange={setSelectedOrg} />
-                </div>
-                <button onClick={() => handleOpen()} className="mt-4 bg-primary_btn_color text-white font-medium text-base px-4 h-12 rounded-sm">
-                    Add Inventory
-                </button>
+                {!localStorage.getItem("userOrg") &&
+                    <div>
+                        <OrganizationSelector selectedOrg={selectedOrg} onChange={setSelectedOrg} />
+                    </div>}
+                {userRole !== 4 &&
+                    <button onClick={() => handleOpen()} className="bg-primary_btn_color text-white font-medium text-base px-4 h-12 rounded-sm">
+                        Add Inventory
+                    </button>
+                }
             </div>
 
             {/* Table */}
@@ -129,16 +151,16 @@ const InventoryReports = () => {
                                 {expandedRows[row.original.inventoryId] && (
                                     <tr key={`expanded-${row.id}`} className="bg-gray-100">
                                         <td colSpan={columns.length} className="p-4">
-                                            <p><strong>Batch Number:</strong> {row.original.batchNumber}</p>
-                                            <p><strong>Lot Number:</strong> {row.original.lotNumber}</p>
-                                            <p><strong>Serial Number:</strong> {row.original.serialNumber}</p>
+                                            <p><strong>C and H charges:</strong> {row.original.cAndHCharges}</p>
+                                            <p><strong>Cost Before Duty:</strong> {row.original.costBeforeDuty}</p>
+                                            <p><strong>Cost Before Profit Margin:</strong> {row.original.costBeforeProfitMargin}</p>
+                                            <p><strong>Duty Charges:</strong> {row.original.dutyCharges}</p>
+                                            <p><strong>Freight:</strong> {row.original.freight}</p>
                                             <p><strong>Manufacturing Date:</strong> {row.original.manufacturingDate}</p>
                                             <p><strong>Expiry Date:</strong> {row.original.expiryDate}</p>
                                             <p><strong>Stock Inward Date:</strong> {row.original.stockInwardDate}</p>
                                             <p><strong>Stock Outward Date:</strong> {row.original.stockOutwardDate}</p>
                                             <p><strong>Reorder Level:</strong> {row.original.reorderLevel}</p>
-                                            <p><strong>Sub Warehouse Name:</strong> {row.original.subWarehouseName}</p>
-                                            <p><strong>Bin Location:</strong> {row.original.binLocation}</p>
                                             <p><strong>Category:</strong> {row.original.category}</p>
                                             <p><strong>Sub-Category:</strong> {row.original.subCategory}</p>
                                             <p><strong>Unit Of Measure:</strong> {row.original.unitOfMeasure}</p>
@@ -153,7 +175,7 @@ const InventoryReports = () => {
             </div>
 
             {/* InventoryReports Modal */}
-            {open && editingInventoryReport && <InventoryReportsModal inventoryReport={editingInventoryReport} organizationId={selectedOrg} onClose={handleClose} />}
+            {open && <InventoryReportsModal inventoryReport={editingInventoryReport} organizationId={selectedOrg} onClose={handleClose} />}
 
             {/* Delete Confirmation Dialog */}
             <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
