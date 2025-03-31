@@ -1,9 +1,10 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, use } from 'react';
 import { useGetSupplierSitesQuery, useDeleteSupplierSiteMutation, SupplierSite } from "../../../../state/api";
 import { DataGrid, GridRenderCellParams } from "@mui/x-data-grid";
 import { Pencil, Trash2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
+import { useAppSelector } from "../../../redux";
 
 const SupplierSiteModal = dynamic(() => import("./supplierSitesModal"), { ssr: false });
 
@@ -15,6 +16,8 @@ const SupplierSites = ({ supplierId }: { supplierId: string }) => {
     const [editingSupplierSite, setEditingSupplierSite] = useState<SupplierSite | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [deleteId, setDeleteId] = useState<string | null>(null);
+    const user = useAppSelector((state) => state.user);
+    const userRole = user?.roleId || 4;
 
     const handleOpen = useCallback((supplier = null) => {
         setEditingSupplierSite(supplier);
@@ -47,30 +50,40 @@ const SupplierSites = ({ supplierId }: { supplierId: string }) => {
         { field: "contactEmail", headerName: "Contact Email", flex: 1, minWidth: 200 },
         { field: "latitude", headerName: "Latitude", flex: 1, minWidth: 100 },
         { field: "longitude", headerName: "Longitude", flex: 1, minWidth: 100 },
-        {
-            field: "actions",
-            headerName: "Actions",
-            sortable: false,
-            flex: 1,
-            minWidth: 200,
-            renderCell: (params: GridRenderCellParams) => (
-                <div className="flex items-center gap-2">
-                    <button onClick={() => handleOpen(params.row)} className="p-2 text-primary_btn_color rounded">
-                        <Pencil size={16} />
-                    </button>
-                    <button onClick={() => handleDeleteClick(params.row.id)} className="p-2 text-primary_btn_color rounded">
-                        <Trash2 size={16} />
-                    </button>
-                </div>
-            ),
-        },
+        ...(userRole !== 4
+            ? [
+                {
+                    field: "actions",
+                    headerName: "Actions",
+                    sortable: false,
+                    flex: 1,
+                    minWidth: 200,
+                    renderCell: (params: GridRenderCellParams) => (
+                        <div className="flex items-center gap-2">
+                            {userRole !== 4 && (
+                                <button onClick={() => handleOpen(params.row)} className="p-2 text-primary_btn_color rounded">
+                                    <Pencil size={16} />
+                                </button>
+                            )}
+                            {userRole !== 4 && userRole!==3 && (
+                                <button onClick={() => handleDeleteClick(params.row.id)} className="p-2 text-primary_btn_color rounded">
+                                    <Trash2 size={16} />
+                                </button>
+                            )}
+                        </div>
+                    ),
+                },
+            ]
+            : [])
     ], [handleOpen, handleDeleteClick]);
 
     return (
         <div className="flex flex-col gap-4">
             <div className="flex justify-between gap-4">
-                <button onClick={() => handleOpen()} className="mt-4 bg-primary_btn_color text-[#fff] font-medium 
+                {userRole !== 4 && (
+                    <button onClick={() => handleOpen()} className="mt-4 bg-primary_btn_color text-[#fff] font-medium 
                     font-sans text-base text-center px-4 h-12 rounded-sm">Create Supplier Site</button>
+                )}
             </div>
             <div className="flex-1 min-h-0 overflow-auto">
                 <DataGrid rows={sites} columns={columns} loading={isLoading} disableColumnResize

@@ -13,14 +13,14 @@ const SupplierItemModal = ({ supplierItem, onClose, supplierId, organizationId }
     is_preferred: false,
   });
 
-  const { data: items, isLoading } = useGetItemsQuery(Number(organizationId) || 0); // Fetch items
+  const { data: items, isLoading } = useGetItemsQuery({ organizationId: Number(organizationId) || 0 }); // Fetch items
   const [createSupplierItem] = useLinkProductsToSupplierMutation();
   const [updateSupplierItem] = useUpdateSupplierItemMutation();
 
   useEffect(() => {
     if (supplierItem) {
       setFormData({
-        itemId: supplierItem.itemId ? String(supplierItem.itemId) : "", 
+        itemId: supplierItem.itemId ? String(supplierItem.itemId) : "",
         supply_quantity: supplierItem.supply_quantity || "",
         supply_price: supplierItem.supply_price || "",
         effective_date: supplierItem.effective_date || "",
@@ -60,6 +60,7 @@ const SupplierItemModal = ({ supplierItem, onClose, supplierId, organizationId }
       supply_price: formData.supply_price, // Keep as string
       effective_date: new Date(formData.effective_date), // Convert to date
     };
+    console.log(apiData);
 
     if (supplierItem?.itemId) {
       await updateSupplierItem({ supplierId: Number(supplierId), itemId: supplierItem.itemId, data: apiData });
@@ -74,7 +75,7 @@ const SupplierItemModal = ({ supplierItem, onClose, supplierId, organizationId }
       <div className="bg-white p-6 rounded-lg shadow-lg w-[25%] max-h-[80vh] overflow-y-auto border-black-200">
         <h2 className="text-xl font-semibold mb-4">{supplierItem ? "Edit Supplier Item" : "Create Supplier Item"}</h2>
         <form onSubmit={handleSubmit} className="space-y-3">
-        <FormControl fullWidth required>
+          <FormControl fullWidth required>
             <InputLabel>Item</InputLabel>
             {isLoading ? (
               <CircularProgress size={24} />
@@ -92,24 +93,34 @@ const SupplierItemModal = ({ supplierItem, onClose, supplierId, organizationId }
               </Select>
             )}
           </FormControl>
-          <TextField
-            type="number"
-            name="supply_quantity"
-            value={formData.supply_quantity}
-            onChange={handleChange}
-            placeholder="Supply Quantity"
-            className="w-full p-2 border rounded"
-            required
-          />
-          <TextField
-            type="number"
-            name="supply_price"
-            value={formData.supply_price}
-            onChange={handleChange}
-            placeholder="Supply Price"
-            className="w-full p-2 border rounded"
-            required
-          />
+          <div>
+            <label>Supply Quantity</label>
+            <TextField
+              type="number"
+              inputMode="numeric" 
+              onWheel={(e) => (e.target as HTMLInputElement).blur()}
+              name="supply_quantity"
+              value={formData.supply_quantity}
+              onChange={handleChange}
+              placeholder="Supply Quantity"
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
+          <div>
+            <label>Supply Price</label>
+            <TextField
+              type="number"
+              inputMode="numeric" 
+              onWheel={(e) => (e.target as HTMLInputElement).blur()}
+              name="supply_price"
+              value={formData.supply_price}
+              onChange={handleChange}
+              placeholder="Supply Price"
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
           <div>
             <label>Effective Date</label>
             <TextField

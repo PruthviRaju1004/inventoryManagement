@@ -3,6 +3,7 @@ import { useState, useCallback, useMemo } from "react";
 import { useGetSupplierItemsQuery, SupplierItem, Item } from "../../../../state/api";
 import { DataGrid, GridRenderCellParams } from "@mui/x-data-grid";
 import dynamic from "next/dynamic";
+import { useAppSelector } from "../../../redux";
 import { Pencil } from "lucide-react";
 
 const SupplierItemModal = dynamic(() => import("./supplierItemsModal"), { ssr: false });
@@ -14,6 +15,8 @@ const SupplierItems = ({ supplierId, organizationId }: { supplierId: string; org
     const [editingSupplierItems, setEditingSupplierItems] = useState<SupplierItem | null>(null);
     // const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     // const [deleteId, setDeleteId] = useState<string | null>(null);
+    const user = useAppSelector((state) => state.user);
+    const userRole = user?.roleId || 4;
 
     // Ensure each row has a unique `id`
     const rows = items.map((item: SupplierItem) => ({
@@ -47,30 +50,38 @@ const SupplierItems = ({ supplierId, organizationId }: { supplierId: string; org
                 return date;
             }
         },
-        {
-            field: "actions",
-            headerName: "Actions",
-            sortable: false,
-            flex: 1,
-            minWidth: 200,
-            renderCell: (params: GridRenderCellParams) => (
-                <div className="flex items-center gap-2">
-                    <button onClick={() => handleOpen(params.row)} className="p-2 text-primary_btn_color rounded">
-                        <Pencil size={16} />
-                    </button>
-                    {/* <button onClick={() => handleDeleteClick(params.row.id)} className="p-2 text-primary_btn_color rounded">
+        ...(userRole !== 4
+            ? [
+                {
+                    field: "actions",
+                    headerName: "Actions",
+                    sortable: false,
+                    flex: 1,
+                    minWidth: 200,
+                    renderCell: (params: GridRenderCellParams) => (
+                        <div className="flex items-center gap-2">
+                            {userRole !== 4 && (
+                                <button onClick={() => handleOpen(params.row)} className="p-2 text-primary_btn_color rounded">
+                                    <Pencil size={16} />
+                                </button>
+                            )}
+                            {/* <button onClick={() => handleDeleteClick(params.row.id)} className="p-2 text-primary_btn_color rounded">
                         <Trash2 size={16} />
                     </button> */}
-                </div>
-            ),
-        },
+                        </div>
+                    ),
+                },
+            ]
+            : [])
     ], [handleOpen]);
 
     return (
         <div className="flex flex-col gap-4">
             <div className="flex justify-between gap-4">
-                <button onClick={() => handleOpen()} className="mt-4 bg-primary_btn_color text-[#fff] font-medium 
+                {userRole !== 4 && (
+                    <button onClick={() => handleOpen()} className="mt-4 bg-primary_btn_color text-[#fff] font-medium 
                     font-sans text-base text-center px-4 h-12 rounded-sm float-right">Create Supplier Item</button>
+                )}
             </div>
             <div className="flex-1 min-h-0 overflow-auto">
                 <DataGrid rows={rows} columns={columns} loading={isLoading} disableColumnResize
@@ -81,7 +92,7 @@ const SupplierItems = ({ supplierId, organizationId }: { supplierId: string; org
                         "& .MuiDataGrid-cell--textLeft": { display: "flex" },
                     }} />
             </div>
-            {open && <SupplierItemModal supplierItem={editingSupplierItems} onClose={handleClose} supplierId={supplierId} organizationId={organizationId || ''}/>}
+            {open && <SupplierItemModal supplierItem={editingSupplierItems} onClose={handleClose} supplierId={supplierId} organizationId={organizationId || ''} />}
         </div>
     );
 };
