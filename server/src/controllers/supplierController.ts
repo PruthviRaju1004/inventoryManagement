@@ -6,14 +6,14 @@ const prisma = new PrismaClient();
 // Create Supplier (Only Super Admin or Organization Admin)
 export const createSupplier = async (req: Request, res: Response): Promise<void> => {
     const userRole = (req as any).user.role;
-    if (userRole !== "super_admin" && userRole !== "admin") {
+    if (userRole === "viewer") {
         res.status(403).json({ message: "Forbidden: Only super admins or organization admins can create suppliers" });
         return;
     }
 
     try {
         const { organizationId, name, supplierCode, contactName, contactEmail, contactPhone, paymentTerms, currency, taxId } = req.body;
-        const userId = (req as any).user.userId;
+        const userId = (req as any).user.id;
         if (!supplierCode) {
             res.status(400).json({ message: "Supplier code is required" });
             return;
@@ -50,7 +50,7 @@ export const getSuppliers = async (req: Request, res: Response): Promise<void> =
     try {
         const userRole = (req as any).user.role;
         const userOrgId = (req as any).user.organizationId;
-        let { organizationId } = req.query;
+        let { organizationId, search } = req.query;
 
         // If the user is not a super_admin, restrict them to their own organization
         if (userRole !== "super_admin") {
@@ -59,8 +59,14 @@ export const getSuppliers = async (req: Request, res: Response): Promise<void> =
             res.status(400).json({ message: "Organization ID is required for super admins" });
             return;
         }
-
-        const suppliers = await prisma.supplier.findMany({ where: { organizationId: Number(organizationId) } });
+        const filters: any = { organizationId: Number(organizationId) };
+        if (search) {
+            filters.OR = [
+                { name: { contains: search as string, mode: "insensitive" } },
+                { supplierCode: { contains: search as string, mode: "insensitive" } }
+            ];
+        }
+        const suppliers = await prisma.supplier.findMany({ where: filters, orderBy: { name: "asc" } });
         res.status(200).json(suppliers);
     } catch (error) {
         console.error("Error fetching suppliers:", error);
@@ -115,7 +121,7 @@ export const deleteSupplier = async (req: Request, res: Response): Promise<void>
 export const linkProductsToSupplier = async (req: Request, res: Response): Promise<void> => {
     try {
         const { supplierId } = req.params;
-        const userId = (req as any).user.userId;
+        const userId = (req as any).user.id;
         const { itemId, supply_quantity, supply_price, effective_date, is_preferred, created_by } = req.body;
 
         if (!supplierId || !itemId || !supply_price || !supply_quantity) {
@@ -138,7 +144,7 @@ export const linkProductsToSupplier = async (req: Request, res: Response): Promi
         const stock = await prisma.supplierItem.upsert({
             where: { supplierId_itemId: { supplierId: Number(supplierId), itemId: Number(itemId) } },
             update: {
-                supply_price: parseFloat(supply_price), 
+                supply_price: parseFloat(supply_price),
                 supply_quantity: parseFloat(supply_quantity),
                 effective_date: new Date(effective_date),
                 is_preferred: is_preferred ?? false,
@@ -206,7 +212,8 @@ export const getSupplierItems = async (req: Request, res: Response): Promise<voi
 export const updateSupplierItem = async (req: Request, res: Response): Promise<void> => {
     try {
         const { supplierId, itemId } = req.params;
-        const { supply_price, supply_quantity, currency, effective_date, is_preferred, updated_by } = req.body;
+        const { supply_price, supply_quantity, effective_date, is_preferred } = req.body;
+        const userId = (req as any).user.id;
 
         const existingSupplierItem = await prisma.supplierItem.findUnique({
             where: { supplierId_itemId: { supplierId: Number(supplierId), itemId: Number(itemId) } },
@@ -214,19 +221,35 @@ export const updateSupplierItem = async (req: Request, res: Response): Promise<v
 
         if (!existingSupplierItem) {
             res.status(404).json({ message: "Product not linked to this supplier" });
-            return;
+            return
         }
+
+        // 🔹 Convert values properly
+        const updateData: any = {};
+        if (supply_price !== undefined) {
+            updateData.supply_price = parseFloat(supply_price);
+        }
+        if (supply_quantity !== undefined) {
+            updateData.supply_quantity = parseFloat(supply_quantity);
+        }
+        if (effective_date !== undefined) {
+            updateData.effective_date = new Date(effective_date);
+        }
+        if (is_preferred !== undefined) {
+            updateData.is_preferred = is_preferred;
+        }
+
+        // 🔹 Ensure update is actually happening
+        if (Object.keys(updateData).length === 0) {
+            res.status(200).json({ message: "No changes detected, update skipped" });
+            return
+        }
+
+        updateData.updated_by = Number(userId);
 
         const updatedSupplierItem = await prisma.supplierItem.update({
             where: { supplierId_itemId: { supplierId: Number(supplierId), itemId: Number(itemId) } },
-            data: {
-                supply_price: supply_price ? parseFloat(supply_price) : undefined,
-                supply_quantity: supply_quantity ? parseFloat(supply_quantity) : undefined,
-                effective_date: effective_date ? new Date(effective_date) : undefined,
-                is_preferred: is_preferred ?? undefined,
-                updated_by: Number(updated_by),
-                updated_date: new Date(),
-            },
+            data: updateData,
         });
 
         res.status(200).json({ message: "Supplier product updated successfully", updatedSupplierItem });

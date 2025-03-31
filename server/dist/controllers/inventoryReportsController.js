@@ -20,7 +20,7 @@ const createInventoryReport = (req, res) => __awaiter(void 0, void 0, void 0, fu
             return;
         }
         const userId = req.user.userId;
-        const { organizationId, itemName, sku, batchNumber, lotNumber, serialNumber, manufacturingDate, expiryDate, stockInwardDate, stockOutwardDate, openingQuantity, currentQuantity, inwardQuantity, outwardQuantity, committedQuantity, availableQuantity, damagedQuantity, unitCost, totalValue, reorderLevel, warehouseId, warehouseName, subWarehouseName, binLocation, category, subCategory, unitOfMeasure, barcode } = req.body;
+        const { organizationId, itemId, itemName, sku, batchNumber, lotNumber, serialNumber, manufacturingDate, expiryDate, stockInwardDate, stockOutwardDate, openingQuantity, currentQuantity, inwardQuantity, outwardQuantity, committedQuantity, availableQuantity, damagedQuantity, unitCost, totalValue, reorderLevel, warehouseId, warehouseName, subWarehouseName, binLocation, category, subCategory, unitOfMeasure, barcode } = req.body;
         if (!organizationId || !itemName || !sku) {
             res.status(400).json({ message: "Missing required fields: organizationId, itemName, or sku" });
             return;
@@ -36,6 +36,7 @@ const createInventoryReport = (req, res) => __awaiter(void 0, void 0, void 0, fu
         const newInventoryReport = yield prisma.inventoryReport.create({
             data: {
                 organizationId,
+                itemId,
                 itemName,
                 sku,
                 batchNumber,
@@ -64,7 +65,7 @@ const createInventoryReport = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 unitOfMeasure,
                 barcode,
                 createdBy: Number(userId),
-                updatedBy: Number(userId)
+                updatedBy: Number(userId),
             },
         });
         res.status(201).json({ message: "Inventory Report created successfully", inventoryReport: newInventoryReport });

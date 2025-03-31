@@ -15,7 +15,7 @@ const prisma = new client_1.PrismaClient();
 // Create Warehouse (Only Super Admin or Organization Admin)
 const createWarehouse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userRole = req.user.role;
-    if (userRole !== "super_admin" && userRole !== "admin") {
+    if (userRole === "super_admin" && userRole !== "admin") {
         res.status(403).json({ message: "Forbidden: Only super admins or organization admins can create warehouses" });
         return;
     }

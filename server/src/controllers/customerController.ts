@@ -3,18 +3,11 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// Create Customer (Only Super Admin or Organization Admin)
+// Create Customer (Only Super Admin)
 export const createCustomer = async (req: Request, res: Response): Promise<void> => {
-    const userRole = (req as any).user.role;
-    if (userRole !== "super_admin" && userRole !== "admin") {
-        res.status(403).json({ message: "Forbidden: Only super admins or organization admins can create customers" });
-        return;
-    }
-
     try {
-        console.log("Request Body:", req.body);
         const { organizationId, name, customerCode, contactName, contactEmail, contactPhone, paymentTerms, currency, taxId } = req.body;
-        const userId = (req as any).user.userId;
+        const userId = (req as any).user.id;
 
         if (!customerCode) {
             res.status(400).json({ message: "Customer code is required" });
@@ -50,21 +43,30 @@ export const createCustomer = async (req: Request, res: Response): Promise<void>
     }
 };
 
-// Get Customers
+// Get Customers (Admin, Manager, Viewer can view)
 export const getCustomers = async (req: Request, res: Response): Promise<void> => {
     try {
-        const userRole = (req as any).user.role;
+        const userRole = (req as any).user.roleId;
         const userOrgId = (req as any).user.organizationId;
-        let { organizationId } = req.query;
+        let { organizationId, search } = req.query;
 
-        if (userRole !== "super_admin") {
-            organizationId = userOrgId;
+        if (userRole === "admin") {
+            organizationId = userOrgId;  // Admin can only access their own org's items
         } else if (!organizationId) {
             res.status(400).json({ message: "Organization ID is required for super admins" });
             return;
         }
+        const filters: any = { organizationId: Number(organizationId) };
+        if (search) {
+            filters.OR = [
+                { name: { contains: search as string, mode: "insensitive" } },
+                { customerCode: { contains: search as string, mode: "insensitive" } }
+            ];
+        }
+        const customers = await prisma.customer.findMany({
+            where: filters,
+        });
 
-        const customers = await prisma.customer.findMany({ where: { organizationId: Number(organizationId) } });
         res.status(200).json(customers);
     } catch (error) {
         console.error("Error fetching customers:", error);
@@ -72,7 +74,7 @@ export const getCustomers = async (req: Request, res: Response): Promise<void> =
     }
 };
 
-// Update Customer
+// Update Customer (Admin, Manager can update)
 export const updateCustomer = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
@@ -94,7 +96,7 @@ export const updateCustomer = async (req: Request, res: Response): Promise<void>
     }
 };
 
-// Delete Customer
+// Delete Customer (Admin, Super Admin can delete)
 export const deleteCustomer = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
@@ -116,3 +118,29 @@ export const deleteCustomer = async (req: Request, res: Response): Promise<void>
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
+// Get Customer by ID (Admin, Manager, Viewer can view)
+export const getCustomerById = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        if (isNaN(Number(id))) {
+            res.status(400).json({ message: "Invalid customer ID" });
+            return;
+        }
+
+        const customer = await prisma.customer.findUnique({
+            where: { id: Number(id) },
+        });
+
+        if (!customer) {
+            res.status(404).json({ message: "Customer not found" });
+            return;
+        }
+
+        res.status(200).json(customer);
+    } catch (error) {
+        console.error("Error fetching customer:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+

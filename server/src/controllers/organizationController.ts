@@ -13,8 +13,7 @@ export const createOrganization = async (req: Request, res: Response): Promise<v
 
     try {
         const { name, contactEmail, contactPhone, address, taxId, dunsNumber, website, socialMedia } = req.body;
-        const userId = (req as any).user.userId;
-        console.log("User ID:", userId); // Debugging log
+        const userId = (req as any).user.id;
         // Validate website domain matches email domain
         if (website && !validateDomain(contactEmail, website)) {
             res.status(400).json({ message: "Website domain must match email domain" });
@@ -42,7 +41,7 @@ export const createOrganization = async (req: Request, res: Response): Promise<v
                 updatedBy: Number(userId),  // ✅ Ensure it's a number
             },
         });
-        console.log("new org", newOrg)
+        // console.log("new org", newOrg)
 
         res.status(201).json({ message: "Organization created successfully", organization: newOrg });
     } catch (error) {
@@ -53,11 +52,6 @@ export const createOrganization = async (req: Request, res: Response): Promise<v
 
 // Get Organizations (Only Super Admin)
 export const getOrganizations = async (req: Request, res: Response): Promise<void> => {
-    if ((req as any).user.role !== "super_admin") {
-        res.status(403).json({ message: "Forbidden: Only super admins can view organizations" });
-        return;
-    }
-
     try {
         const organizations = await prisma.organization.findMany();
         // Convert file paths to URLs
@@ -68,6 +62,35 @@ export const getOrganizations = async (req: Request, res: Response): Promise<voi
         res.status(200).json(updatedOrganizations);
     } catch (error) {
         console.error("Error fetching organizations:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export const getOrganizationById = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const organization = await prisma.organization.findUnique({
+            where: { id: Number(id) },
+        });
+
+        if (!organization) {
+            res.status(404).json({ message: "Organization not found" });
+            return;
+        }
+
+        // Convert file paths to URLs
+        const updatedOrganization = {
+            ...organization,
+            legalProofs: Array.isArray(organization.legalProofs)
+                ? organization.legalProofs
+                      .filter((file): file is string => typeof file === "string")
+                      .map((file: string) => `https://inventorymanagement-production-6ff8.up.railway.app${file}`)
+                : [],
+        };
+
+        res.status(200).json(updatedOrganization);
+    } catch (error) {
+        console.error("Error fetching organization by ID:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 };

@@ -5,22 +5,24 @@ import {
     updateWarehouse,
     deleteWarehouse,
     addItemToWarehouse,
-    getWarehouseStock,
+    getWarehouseProducts,
     updateWarehouseStock,
-    reserveStock
+    reserveStock,
+    getWarehouseById
 } from "../controllers/warehouseController";
-import { authenticateToken, authorizeSuperAdmin } from "../middleware/auth";
+import { authenticateToken, authorizeAdmin, authorizeManager, authorizeViewer, authorizeSuperAdmin } from "../middleware/auth";
 
 const router = express.Router();
 
-router.post("/create", authenticateToken, authorizeSuperAdmin, createWarehouse);
-router.get("/", authenticateToken, authorizeSuperAdmin, getWarehouses);  // Allow both super_admin & admin
-router.put("/:id", authenticateToken, authorizeSuperAdmin, updateWarehouse);
-router.delete("/:id", authenticateToken, authorizeSuperAdmin, deleteWarehouse);
+router.post("/create", authenticateToken, authorizeManager, createWarehouse);
+router.get("/", authenticateToken, authorizeViewer, getWarehouses);  // Allow both super_admin & admin
+router.get("/:id", authenticateToken, authorizeViewer, getWarehouseById);  // Allow both super_admin & admin
+router.put("/:id", authenticateToken, authorizeManager, updateWarehouse);
+router.delete("/:id", authenticateToken, authorizeAdmin, deleteWarehouse);
 router.post("/:warehouseId/items", authenticateToken, authorizeSuperAdmin, addItemToWarehouse);
 
 // Get stock levels for a warehouse
-router.get("/:warehouseId/stock", authenticateToken, authorizeSuperAdmin, getWarehouseStock);
+router.get("/:warehouseId/stock", authenticateToken, authorizeViewer, getWarehouseProducts);
 // Update stock levels for a warehouse
 router.put("/:warehouseId/stock", authenticateToken, authorizeSuperAdmin, updateWarehouseStock);
 

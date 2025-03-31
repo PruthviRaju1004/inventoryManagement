@@ -3,10 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.authorizeSuperAdmin = exports.authenticateToken = void 0;
+exports.authorizeViewer = exports.authorizeManager = exports.authorizeAdmin = exports.authorizeSuperAdmin = exports.authenticateToken = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const SECRET_KEY = process.env.JWT_SECRET || "your_secret_key";
-// Middleware to verify JWT token
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -16,8 +15,7 @@ const authenticateToken = (req, res, next) => {
     const token = authHeader.split(" ")[1];
     try {
         const decoded = jsonwebtoken_1.default.verify(token, SECRET_KEY);
-        // console.log("Decoded Token:", decoded); // Add this log
-        req.user = decoded; // Attach decoded user data to request object
+        req.user = decoded;
         next();
     }
     catch (error) {
@@ -26,21 +24,39 @@ const authenticateToken = (req, res, next) => {
     }
 };
 exports.authenticateToken = authenticateToken;
-// Middleware to allow only Super Admin (roleId = 1)
-// export const authorizeSuperAdmin = (req: Request, res: Response, next: NextFunction): void => {
-//     const user = (req as any).user;
-//     if (!user || user.role !== "super_admin") { 
-//         res.status(403).json({ message: "Forbidden: Super Admin access only" });
-//         return;
-//     }
-//     next();
-// };
+// 🔹 Middleware to check if user is Super Admin (roleId = 1)
 const authorizeSuperAdmin = (req, res, next) => {
-    // console.log("User Role:", (req as any).user.role); // Debugging log
-    if (req.user.role !== "super_admin") {
+    if (req.user.roleId !== 1) {
         res.status(403).json({ message: "Forbidden: Only super admins can perform this action" });
         return;
     }
     next();
 };
 exports.authorizeSuperAdmin = authorizeSuperAdmin;
+// 🔹 Middleware to check if user is Admin or higher (roleId = 1 or 2)
+const authorizeAdmin = (req, res, next) => {
+    if (![1, 2].includes(req.user.roleId)) {
+        res.status(403).json({ message: "Forbidden: Only admins and super admins can perform this action" });
+        return;
+    }
+    next();
+};
+exports.authorizeAdmin = authorizeAdmin;
+// 🔹 Middleware to check if user is Manager or higher (roleId = 1, 2, or 3)
+const authorizeManager = (req, res, next) => {
+    if (![1, 2, 3].includes(req.user.roleId)) {
+        res.status(403).json({ message: "Forbidden: Only managers, admins, and super admins can perform this action" });
+        return;
+    }
+    next();
+};
+exports.authorizeManager = authorizeManager;
+// 🔹 Middleware to check if user is Viewer or higher (roleId = 1, 2, 3, or 4)
+const authorizeViewer = (req, res, next) => {
+    if (![1, 2, 3, 4].includes(req.user.roleId)) {
+        res.status(403).json({ message: "Forbidden: Only authorized users can perform this action" });
+        return;
+    }
+    next();
+};
+exports.authorizeViewer = authorizeViewer;

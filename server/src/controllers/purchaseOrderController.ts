@@ -6,22 +6,18 @@ const prisma = new PrismaClient();
 // Create Purchase Order (Only Super Admin or Organization Admin)
 export const createPurchaseOrder = async (req: Request, res: Response): Promise<void> => {
     const userRole = (req as any).user.role;
-    if (userRole !== "super_admin" && userRole !== "admin") {
+    if (userRole === "viewer") {
         res.status(403).json({ message: "Forbidden: Only super admins or organization admins can create purchase orders" });
         return;
     }
 
     try {
-        const { organizationId, supplierId, totalAmount, orderDate, expectedDate, purchaseOrderItems, orderNumber, receivedDate, remarks } = req.body;
-        const userId = (req as any).user.userId;
-        console.log("Received purchase order data:", req.body);
-
-
+        const { organizationId, supplierId, totalAmount, orderDate, expectedDate, purchaseOrderItems, receivedDate, remarks } = req.body;
+        const userId = (req as any).user.id;
         if (!Array.isArray(purchaseOrderItems)) {
             res.status(400).json({ message: "purchaseOrderItems must be a non-empty array" });
             return;
         }
-
         const generateOrderNumber = () => {
             // This can be a more sophisticated generation logic if required
             return `PO-${Math.floor(Math.random() * 1000000)}`;
@@ -53,7 +49,6 @@ export const createPurchaseOrder = async (req: Request, res: Response): Promise<
             },
             include: { purchaseOrderItems: true }, // Ensure to include purchaseOrderItems in the response
         });
-
         res.status(201).json({ message: "Purchase Order created successfully", purchaseOrder: newPurchaseOrder });
     } catch (error) {
         console.error("Error creating purchase order:", error);
@@ -66,27 +61,24 @@ export const getPurchaseOrders = async (req: Request, res: Response): Promise<vo
     try {
         const userRole = (req as any).user.role;
         const userOrgId = (req as any).user.organizationId;
-        let { organizationId } = req.query;
-
+        let { organizationId, status } = req.query;
         if (userRole !== "super_admin") {
             organizationId = userOrgId;
         } else if (!organizationId) {
             res.status(400).json({ message: "Organization ID is required for super admins" });
             return;
         }
-
+        const whereClause: any = { organizationId: Number(organizationId) };
+        if (status) {
+            whereClause.status = status;
+        }
         const purchaseOrders = await prisma.purchaseOrder.findMany({
+            where: whereClause,
             include: {
                 supplier: true,
-                purchaseOrderItems: {
-                    include: { 
-                        item: true, 
-                    },
-                },
+                purchaseOrderItems: true
             },
-            where: { organizationId: Number(organizationId) }
         });
-
         // Fetch supplier prices separately
         const formattedOrders = await Promise.all(purchaseOrders.map(async (order) => {
             const updatedItems = await Promise.all(order.purchaseOrderItems.map(async (poItem) => {
@@ -100,8 +92,7 @@ export const getPurchaseOrders = async (req: Request, res: Response): Promise<vo
 
                 return {
                     ...poItem,
-                    ...poItem.item,
-                    itemId: poItem.item.id,
+                    itemId: poItem.itemId,
                     supplierUnitPrice: supplierProduct?.supply_price || null, // Assign supplier's unit price
                 };
             }));
@@ -111,15 +102,12 @@ export const getPurchaseOrders = async (req: Request, res: Response): Promise<vo
                 purchaseOrderItems: updatedItems,
             };
         }));
-
         res.status(200).json(formattedOrders);
     } catch (error) {
         console.error("Error fetching purchase orders:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 };
-
-
 
 // Get Single Purchase Order by ID
 export const getPurchaseOrderById = async (req: Request, res: Response): Promise<void> => {
@@ -136,7 +124,7 @@ export const getPurchaseOrderById = async (req: Request, res: Response): Promise
             where: { id: Number(purchaseOrderId) },
             include: {
                 supplier: true,
-                purchaseOrderItems: { include: { item: true } },
+                purchaseOrderItems: true,
             },
         });
 
@@ -150,8 +138,6 @@ export const getPurchaseOrderById = async (req: Request, res: Response): Promise
             ...purchaseOrder,
             purchaseOrderItems: purchaseOrder.purchaseOrderItems.map(poItem => ({
                 ...poItem,
-                ...poItem.item, // Merge all item properties into purchaseOrderItems
-                itemId: poItem.item.id, // Rename item id to avoid confusion
             }))
         };
 

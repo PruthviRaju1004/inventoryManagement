@@ -6,14 +6,14 @@ const prisma = new PrismaClient();
 // Create Warehouse (Only Super Admin or Organization Admin)
 export const createWarehouse = async (req: Request, res: Response): Promise<void> => {
     const userRole = (req as any).user.role;
-    if (userRole !== "super_admin" && userRole !== "admin") {
+    if (userRole === "viewer") {
         res.status(403).json({ message: "Forbidden: Only super admins or organization admins can create warehouses" });
         return;
     }
 
     try {
         const { organizationId, name, code, address, contactEmail, contactPhone, latitude, longitude, sqFoot, noOfDocks, lotSize, shelvesRacks } = req.body;
-        const userId = (req as any).user.userId;
+        const userId = (req as any).user.id;
 
         if (!code) {
             res.status(400).json({ message: "Warehouse code is required" });
@@ -56,22 +56,54 @@ export const getWarehouses = async (req: Request, res: Response): Promise<void> 
     try {
         const userRole = (req as any).user.role;
         const userOrgId = (req as any).user.organizationId;
-        let { organizationId } = req.query;
+        let { organizationId, search } = req.query;
 
         if (userRole !== "super_admin") {
             organizationId = userOrgId;
         } else if (!organizationId) {
+            // console.log("Organization ID is required for super admins");
             res.status(400).json({ message: "Organization ID is required for super admins" });
             return;
         }
-
-        const warehouses = await prisma.warehouse.findMany({ where: { organizationId: Number(organizationId) } });
+        const filters: any = { organizationId: Number(organizationId) };
+        if (search) {
+            filters.OR = [
+                { name: { contains: search as string, mode: "insensitive" } },
+                { code: { contains: search as string, mode: "insensitive" } }
+            ];
+        }
+        const warehouses = await prisma.warehouse.findMany({ where: filters, orderBy: { name: "asc" }});
         res.status(200).json(warehouses);
     } catch (error) {
         console.error("Error fetching warehouses:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
+export const getWarehouseById = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        if (isNaN(Number(id))) {
+            res.status(400).json({ message: "Invalid warehouse ID" });
+            return;
+        }
+
+        const warehouse = await prisma.warehouse.findUnique({
+            where: { id: Number(id) },
+        });
+
+        if (!warehouse) {
+            res.status(404).json({ message: "Warehouse not found" });
+            return;
+        }
+
+        res.status(200).json(warehouse);
+    } catch (error) {
+        console.error("Error fetching warehouse:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
 
 export const updateWarehouse = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -181,7 +213,7 @@ export const updateWarehouseStock = async (req: Request, res: Response): Promise
 
         const existingStock = await prisma.warehouseItem.findUnique({
             where: { warehouseId_itemId: { warehouseId: Number(warehouseId), itemId: Number(itemId) } }
-        }); 
+        });
         if (existingStock && Number(existingStock.quantity) + Number(quantity) < 0) {
             res.status(400).json({ message: "Insufficient stock" });
             return;
@@ -231,5 +263,57 @@ export const reserveStock = async (req: Request, res: Response): Promise<void> =
     } catch (error) {
         console.error("Error reserving stock:", error);
         res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export const getWarehouseProducts = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { warehouseId } = req.params;
+
+        const products = await prisma.inventoryReport.findMany({
+            where: { warehouseId: Number(warehouseId) },
+            select: {
+                itemId: true,
+                itemName: true,
+                sku: true,
+                batchNumber: true,
+                binLocation : true,
+                subWarehouseName: true,
+                lotNumber: true,
+                serialNumber: true,
+                manufacturingDate: true,
+                expiryDate: true,
+                stockInwardDate: true,
+                stockOutwardDate: true,
+                providedQuantity: true,
+                supplierPrice: true,
+                fobAmount: true,
+                allocation: true,
+                cAndHCharges: true,
+                freight: true,
+                costBeforeDuty: true,
+                dutyCharges: true,
+                costBeforeProfitMargin: true,
+                costPerUnit: true,
+                sellingPrice: true,
+                reorderLevel: true,
+                warehouseName: true,
+                category: true,
+                subCategory: true,
+                unitOfMeasure: true,
+                barcode: true,
+            },
+        });
+
+        if (!products.length) {
+            res.status(404).json({ message: "No products found for this warehouse" });
+            return
+        }
+
+        res.json(products);
+        return
+    } catch (error) {
+        console.error("Error fetching warehouse products:", error);
+        res.status(500).json({ message: "Internal Server Error" });
     }
 };

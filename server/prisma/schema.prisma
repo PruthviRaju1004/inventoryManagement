@@ -32,26 +32,31 @@ model Organization {
   purchaseOrders   PurchaseOrder[]
   grns             GRN[]
   inventoryReports InventoryReport[]
+  salesOrders      SalesOrder[]
 
   @@map("organizations")
 }
 
 model User {
-  id             Int       @id @default(autoincrement())
-  organizationId Int? // Foreign key to Organization
-  firstName      String    @default("")
-  lastName       String    @default("")
-  email          String    @unique
-  phoneNumber    String?
-  username       String    @unique @default("")
-  passwordHash   String    @default("")
-  roleId         Int       @default(3) // Assuming 3 is a generic employee role
-  isActive       Boolean   @default(true)
-  createdAt      DateTime  @default(now())
-  createdBy      Int?
-  updatedAt      DateTime  @default(now())
-  updatedBy      Int?
-  lastLogin      DateTime?
+  id                Int       @id @default(autoincrement())
+  organizationId    Int? // Foreign key to Organization
+  firstName         String    @default("")
+  lastName          String    @default("")
+  email             String    @unique
+  phoneNumber       String?
+  username          String    @unique @default("")
+  passwordHash      String    @default("")
+  roleId            Int       @default(3) // Assuming 3 is a generic employee role
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  createdBy         Int?
+  updatedAt         DateTime  @default(now())
+  updatedBy         Int?
+  lastLogin         DateTime?
+  verificationToken String?
+  verified          Boolean?  @default(false)
+  resetToken        String?
+  resetTokenExpiry  DateTime?
 
   organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   role         Role          @relation(fields: [roleId], references: [id], onDelete: Cascade)
@@ -159,6 +164,7 @@ model Customer {
   updatedBy      Int
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  salesOrders  SalesOrder[]
 
   @@map("customers")
 }
@@ -192,6 +198,8 @@ model Warehouse {
   stockTransactions  StockTransaction[] @relation("WarehouseToStockTransactions")
   grns               GRN[]
   inventoryReports   InventoryReport[]
+  salesOrders        SalesOrder[]
+  salesOrderItems    SalesOrderItem[]
 
   @@map("warehouses")
 }
@@ -276,6 +284,8 @@ model Item {
   StockTransaction   StockTransaction[]
   StockTransfer      StockTransfer[]
   GRNLineItem        GRNLineItem[]
+  InventoryReport    InventoryReport[]
+  salesOrderItems    SalesOrderItem[]
 
   @@map("items")
 }
@@ -427,20 +437,20 @@ enum PaymentTerms {
 model GRN {
   grnId          Int       @id @default(autoincrement())
   grnNumber      String    @unique @db.VarChar(100)
-  organizationId Int  
-  grnDate        DateTime @default(now())
-  poId           Int  
-  poNumber       String   @db.VarChar(100) @default("PO-000000")
-  supplierId     Int  
+  organizationId Int
+  grnDate        DateTime  @default(now())
+  poId           Int
+  poNumber       String    @default("PO-000000") @db.VarChar(100)
+  supplierId     Int
   supplierName   String    @db.VarChar(100)
-  status         GRNStatus  @default(Draft)
+  status         GRNStatus @default(Draft)
   totalAmount    Decimal   @db.Decimal(15, 2)
   remarks        String?   @db.Text
   createdAt      DateTime  @default(now())
-  createdBy      Int  
+  createdBy      Int
   updatedAt      DateTime  @updatedAt
-  updatedBy      Int  
-  warehouseId    Int  
+  updatedBy      Int
+  warehouseId    Int
   warehouseName  String    @db.VarChar(100)
 
   po           PurchaseOrder @relation(fields: [poId], references: [id], onDelete: Cascade)
@@ -461,9 +471,9 @@ enum GRNStatus {
 // GRN Line Item Table
 model GRNLineItem {
   lineId            Int       @id @default(autoincrement())
-  grnId             Int  
+  grnId             Int
   // poItemId     Int
-  itemId            Int 
+  itemId            Int
   itemName          String    @db.VarChar(100)
   orderedQty        Decimal   @db.Decimal(10, 2)
   receivedQty       Decimal   @db.Decimal(10, 2)
@@ -490,6 +500,8 @@ model InventoryReport {
   inventoryId       Int          @id @default(autoincrement())
   organizationId    Int
   organization      Organization @relation(fields: [organizationId], references: [id])
+  itemId            Int
+  item              Item         @relation(fields: [itemId], references: [id])
   itemName          String       @db.VarChar(255)
   sku               String       @db.VarChar(50)
   batchNumber       String?      @db.VarChar(50)
@@ -499,15 +511,25 @@ model InventoryReport {
   expiryDate        DateTime?
   stockInwardDate   DateTime?
   stockOutwardDate  DateTime?
-  openingQuantity   Decimal      @db.Decimal(10, 2)
-  currentQuantity   Decimal      @db.Decimal(10, 2)
-  inwardQuantity    Decimal      @db.Decimal(10, 2)
-  outwardQuantity   Decimal      @db.Decimal(10, 2)
-  committedQuantity Decimal      @db.Decimal(10, 2)
-  availableQuantity Decimal      @db.Decimal(10, 2)
-  damagedQuantity   Decimal      @db.Decimal(10, 2)
-  unitCost          Decimal      @db.Decimal(15, 2)
-  totalValue        Decimal      @db.Decimal(20, 2)
+  providedQuantity  Decimal      @db.Decimal(10, 2)
+  supplierPrice     Decimal      @db.Decimal(15, 2)
+  fobAmount         Decimal      @db.Decimal(15, 2)
+  allocation        Decimal      @db.Decimal(15, 2)
+  cAndHCharges      Decimal      @db.Decimal(15, 2)
+  freight           Decimal      @db.Decimal(15, 2)
+  costBeforeDuty    Decimal      @db.Decimal(15, 2)
+  dutyCharges       Decimal      @db.Decimal(15, 2)
+  costBeforeProfitMargin Decimal @db.Decimal(15, 2)
+  costPerUnit       Decimal      @db.Decimal(15, 2)
+  // openingQuantity   Decimal      @db.Decimal(10, 2)
+  // currentQuantity   Decimal      @db.Decimal(10, 2)
+  // inwardQuantity    Decimal      @db.Decimal(10, 2)
+  // outwardQuantity   Decimal      @db.Decimal(10, 2)
+  // committedQuantity Decimal      @db.Decimal(10, 2)
+  // availableQuantity Decimal      @db.Decimal(10, 2)
+  // damagedQuantity   Decimal      @db.Decimal(10, 2)
+  sellingPrice      Decimal      @db.Decimal(15, 2)
+  // totalValue        Decimal      @db.Decimal(20, 2)
   reorderLevel      Decimal?     @db.Decimal(10, 2)
 
   warehouseId Int
@@ -528,4 +550,71 @@ model InventoryReport {
   updatedBy Int
 
   @@map("inventory_reports")
+}
+
+enum SalesOrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  PARTIALLY_PAID
+  CANCELED
+}
+
+model SalesOrder {
+  id                Int              @id @default(autoincrement())
+  organizationId    Int // Foreign key to Organization
+  warehouseId       Int // Foreign key to Warehouse
+  customerId        Int // Foreign key to Customer
+  orderNumber       String           @unique @default("SO-000000") @db.VarChar(100)
+  discount          Decimal?         @db.Decimal(5, 2)
+  tax               Decimal?         @db.Decimal(5, 2)
+  status            SalesOrderStatus @default(PENDING)
+  totalAmount       Decimal          @db.Decimal(10, 2)
+  amountPaid        Decimal          @db.Decimal(10, 2)
+  outstandingAmount Decimal          @db.Decimal(10, 2)
+  paymentStatus     PaymentStatus    @default(PENDING)
+  orderDate         DateTime         @default(now())
+  expectedDate      DateTime?
+  deliveredDate     DateTime?
+  remarks           String?          @db.Text // Additional remarks
+  isActive          Boolean          @default(true)
+  createdAt         DateTime         @default(now())
+  createdBy         Int
+  updatedAt         DateTime         @updatedAt
+  updatedBy         Int
+
+  organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  warehouse       Warehouse        @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  customer        Customer         @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  salesOrderItems SalesOrderItem[]
+
+  @@map("sales_orders")
+}
+
+model SalesOrderItem {
+  id           Int      @id @default(autoincrement())
+  salesOrderId Int // Foreign key to Sales Order
+  warehouseId  Int // Foreign key to Warehouse
+  itemId       Int // Foreign key to Item
+  itemName     String
+  quantity     Decimal  @db.Decimal(10, 2)
+  unitPrice    Decimal  @db.Decimal(10, 2)
+  totalPrice   Decimal  @db.Decimal(10, 2)
+  createdAt    DateTime @default(now())
+  createdBy    Int
+  updatedAt    DateTime @updatedAt
+  updatedBy    Int
+
+  salesOrder SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  warehouse  Warehouse  @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  item       Item       @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@map("sales_order_items")
 }

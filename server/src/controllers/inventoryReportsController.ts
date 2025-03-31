@@ -6,15 +6,15 @@ const prisma = new PrismaClient();
 // Create Inventory Report
 export const createInventoryReport = async (req: Request, res: Response): Promise<void> => {
     try {
-        if (!(req as any).user || !(req as any).user.userId) {
+        if (!(req as any).user || !(req as any).user.id) {
             res.status(401).json({ message: "Unauthorized: User not found" });
             return;
         }
-        const userId = (req as any).user.userId;
-        const { organizationId, itemName, sku, batchNumber, lotNumber, serialNumber, manufacturingDate,
-            expiryDate, stockInwardDate, stockOutwardDate, openingQuantity, currentQuantity,
-            inwardQuantity, outwardQuantity, committedQuantity, availableQuantity, damagedQuantity,
-            unitCost, totalValue, reorderLevel, warehouseId, warehouseName, subWarehouseName,
+        const userId = (req as any).user.id;
+        const { organizationId, itemId, itemName, sku, batchNumber, lotNumber, serialNumber, manufacturingDate,
+            expiryDate, stockInwardDate, stockOutwardDate, providedQuantity, supplierPrice, fobAmount, allocation,
+            cAndHCharges, freight, costBeforeDuty, dutyCharges, costBeforeProfitMargin, costPerUnit, sellingPrice,
+            reorderLevel, warehouseId, warehouseName, subWarehouseName,
             binLocation, category, subCategory, unitOfMeasure, barcode } = req.body;
 
         if (!organizationId || !itemName || !sku) {
@@ -34,6 +34,7 @@ export const createInventoryReport = async (req: Request, res: Response): Promis
         const newInventoryReport = await prisma.inventoryReport.create({
             data: {
                 organizationId,
+                itemId,
                 itemName,
                 sku,
                 batchNumber,
@@ -43,15 +44,17 @@ export const createInventoryReport = async (req: Request, res: Response): Promis
                 expiryDate: parseDate(expiryDate),
                 stockInwardDate: parseDate(stockInwardDate),
                 stockOutwardDate: parseDate(stockOutwardDate),
-                openingQuantity,
-                currentQuantity,
-                inwardQuantity,
-                outwardQuantity,
-                committedQuantity,
-                availableQuantity,
-                damagedQuantity,
-                unitCost,
-                totalValue,
+                providedQuantity,
+                supplierPrice,
+                fobAmount,
+                allocation,
+                cAndHCharges,
+                freight,
+                costBeforeDuty,
+                dutyCharges,
+                costBeforeProfitMargin,
+                costPerUnit,
+                sellingPrice,
                 reorderLevel,
                 warehouseId,
                 warehouseName,
@@ -62,7 +65,7 @@ export const createInventoryReport = async (req: Request, res: Response): Promis
                 unitOfMeasure,
                 barcode,
                 createdBy: Number(userId),
-                updatedBy: Number(userId)
+                updatedBy: Number(userId),
             },
         });
 
@@ -74,9 +77,10 @@ export const createInventoryReport = async (req: Request, res: Response): Promis
 };
 
 // Get All Inventory Reports
-export const getAllInventoryReports = async (_req: Request, res: Response): Promise<void> => {
+export const getAllInventoryReports = async (req: Request, res: Response): Promise<void> => {
+    let { organizationId } = req.query;
     try {
-        const inventoryReports = await prisma.inventoryReport.findMany();
+        const inventoryReports = await prisma.inventoryReport.findMany({ where: { organizationId: Number(organizationId) } });
         res.json(inventoryReports);
     } catch (error) {
         console.error("Error fetching inventory reports:", error);
@@ -118,7 +122,7 @@ export const updateInventoryReport = async (req: Request, res: Response): Promis
             return;
         }
 
-        const userId = (req as any)?.user?.userId;
+        const userId = (req as any)?.user?.id;
         if (!userId) {
             res.status(401).json({ message: "Unauthorized: User not found" });
             return;

@@ -68,7 +68,7 @@ const getOrganizations = (req, res) => __awaiter(void 0, void 0, void 0, functio
     try {
         const organizations = yield prisma.organization.findMany();
         // Convert file paths to URLs
-        const updatedOrganizations = organizations.map(org => (Object.assign(Object.assign({}, org), { legalProofs: Array.isArray(org.legalProofs) ? org.legalProofs.filter((file) => typeof file === 'string').map((file) => `http://localhost:8000${file}`) : [] })));
+        const updatedOrganizations = organizations.map(org => (Object.assign(Object.assign({}, org), { legalProofs: Array.isArray(org.legalProofs) ? org.legalProofs.filter((file) => typeof file === 'string').map((file) => `https://inventorymanagement-production-6ff8.up.railway.app${file}`) : [] })));
         res.status(200).json(updatedOrganizations);
     }
     catch (error) {

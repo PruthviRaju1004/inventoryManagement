@@ -6,14 +6,15 @@ import {
     deleteItem,
     getItemById
 } from "../controllers/productController";
-import { authenticateToken, authorizeSuperAdmin } from "../middleware/auth";
+import { authenticateToken, authorizeAdmin, authorizeManager, authorizeViewer, authorizeSuperAdmin } from "../middleware/auth"; // Added authorizeAdmin
 
 const router = express.Router();
 
-router.post("/create", authenticateToken, authorizeSuperAdmin, createItem);
-router.get("/", authenticateToken, authorizeSuperAdmin, getItems);  // Allow both super_admin & admin
-router.get("/:id", authenticateToken, authorizeSuperAdmin, getItemById);
-router.put("/:id", authenticateToken, authorizeSuperAdmin, updateItem);
-router.delete("/:id", authenticateToken, authorizeSuperAdmin, deleteItem);
+// Middleware to check if the user is either super admin or admin of the organization
+router.post("/create", authenticateToken, authorizeSuperAdmin, createItem); // Only Super Admin allowed to create items
+router.get("/", authenticateToken, authorizeViewer, getItems);  // Both Super Admin & Admin allowed to get items
+router.get("/:id", authenticateToken, getItemById); // Both Super Admin & Admin allowed to get item by ID
+router.put("/:id", authenticateToken, authorizeManager, updateItem);  // Both Super Admin & Admin allowed to update items
+router.delete("/:id", authenticateToken, authorizeAdmin, deleteItem);  // Both Super Admin & Admin allowed to delete items
 
 export default router;

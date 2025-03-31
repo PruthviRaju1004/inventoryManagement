@@ -3,15 +3,15 @@ import { useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { DataGrid, GridRenderCellParams } from "@mui/x-data-grid";
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, MenuItem, Select, FormControl, InputLabel } from "@mui/material";
-import { useGetWarehouseStockQuery, useAddItemToWarehouseMutation, useUpdateWarehouseStockMutation, useGetItemsQuery } from "../../../state/api";
+import { useGetWarehousesQuery, useAddItemToWarehouseMutation, useUpdateWarehouseStockMutation, useGetItemsQuery } from "../../../state/api";
 import { Plus, Pencil } from "lucide-react";
 
 const WarehouseDetails = () => {
     const { id } = useParams(); // Warehouse ID from URL
-    const { data: stockData, isLoading } = useGetWarehouseStockQuery(id);
+    // const { data: stockData, isLoading } = useGetWarehouseStockQuery(id);
     const searchParams = useSearchParams();
     const orgId = searchParams.get("orgId");
-    const { data: items = [] } = useGetItemsQuery(Number(orgId) || 0, { skip: !orgId }); // Fetch available items
+    const { data: items = [] } = useGetItemsQuery({ organizationId: Number(orgId) || 0 }, { skip: !orgId }); // Fetch available items
     const [addItemToWarehouse] = useAddItemToWarehouseMutation();
     const [updateWarehouseStock] = useUpdateWarehouseStockMutation();
 

@@ -1,184 +1,222 @@
 "use client";
+import React, { CSSProperties, useEffect } from "react";
+import OrganizationSelector from "../{components}/organizationSelector/index";
+import { useGetSalesSummaryQuery } from "../../state/api";
+import useOrganizations from "../{hooks}/useOrganizations";
 
-import { Box, Grid, Paper, Typography, Divider } from "@mui/material";
-import { TrendingUp, Truck, Package, Users, Building, Clipboard } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+interface Product {
+  itemName: string;
+  quantity: number;
+}
 
-const stats = [
-  { title: "Total Warehouses", count: 10, icon: <Building size={24} /> },
-  { title: "Total Suppliers", count: 25, icon: <Truck size={24} /> },
-  { title: "Total POs", count: 120, icon: <Package size={24} /> },
-  { title: "Total GRNs", count: 75, icon: <Clipboard size={24} /> },
-  { title: "Total Products", count: 560, icon: <TrendingUp size={24} /> },
-  { title: "Total Customers", count: 80, icon: <Users size={24} /> },
-];
+interface TopProductsProps {
+  title: string;
+  products: Product[];
+}
 
-const recentActivity = [
-  { id: 1, action: "New PO Created", user: "Admin", date: "Feb 26, 2025" },
-  { id: 2, action: "Supplier Added", user: "John Doe", date: "Feb 25, 2025" },
-  { id: 3, action: "Product Updated", user: "Admin", date: "Feb 24, 2025" },
-];
+const TopProductsTable: React.FC<TopProductsProps> = ({ title, products }) => {
+  return (
+    <div style={containerStyle}>
+      <h3 style={titleStyle}>{title}</h3>
+      <table style={tableStyle}>
+        <thead>
+          <tr>
+            <th style={thTdStyle}>Product</th>
+            <th style={thTdStyle}>Quantity</th>
+          </tr>
+        </thead>
+        <tbody>
+          {products.length > 0 ? (
+            products.map((item, index) => (
+              <tr key={index}>
+                <td style={thTdStyle}>{item.itemName}</td>
+                <td style={thTdStyle}>{item.quantity.toFixed(2)}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={2} style={noDataStyle}>No data available</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+};
 
-const inventoryData = [
-  { name: "Jan", stock: 400 },
-  { name: "Feb", stock: 500 },
-  { name: "Mar", stock: 700 },
-  { name: "Apr", stock: 600 },
-];
+interface ProfitMarginProduct {
+  profitPercentage: any;
+  profit: any;
+  salePrice: any;
+  costPrice: any;
+  itemName: string;
+  profitMargin: number;
+}
 
-// Dummy Data for Selling & Profit Margin Reports
-const topSellingProducts = [
-  { name: "Cricket bat", quantity: 120 },
-  { name: "Yonex badminton bat", quantity: 95 },
-  { name: "Pen", quantity: 80 },
-];
+interface ProfitMarginTableProps {
+  title: string;
+  products: ProfitMarginProduct[];
+}
 
-const leastSellingProducts = [
-  { name: "Tub", quantity: 10 },
-  { name: "Product Y", quantity: 15 },
-  { name: "Product Z", quantity: 20 },
-];
-
-const topProfitMarginProducts = [
-  { name: "Product M", margin: "45%" },
-  { name: "Product N", margin: "40%" },
-  { name: "Product O", margin: "38%" },
-];
-
-const leastProfitMarginProducts = [
-  { name: "Product W", margin: "5%" },
-  { name: "Product V", margin: "7%" },
-  { name: "Product U", margin: "10%" },
-];
+const ProfitMarginTable: React.FC<ProfitMarginTableProps> = ({ title, products }) => {
+  return (
+    <div style={containerStyle}>
+      <h3 style={titleStyle}>{title}</h3>
+      <table style={tableStyle}>
+        <thead>
+          <tr>
+            <th style={thTdStyle}>Product</th>
+            <th style={thTdStyle}>Cost Price</th>
+            <th style={thTdStyle}>Sale Price</th>
+            <th style={thTdStyle}>Profit</th>
+            <th style={thTdStyle}>Profit(%)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {products.length > 0 ? (
+            products.map((item, index) => (
+              <tr key={index}>
+                <td style={thTdStyle}>{item.itemName}</td>
+                <td style={thTdStyle}>{item.costPrice.toFixed(2)}</td>
+                <td style={thTdStyle}>{item.salePrice.toFixed(2)}</td>
+                <td style={thTdStyle}>{item.profit.toFixed(2)}</td>
+                <td style={thTdStyle}>{item.profitPercentage.toFixed(2)}%</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={5} style={noDataStyle}>No data available</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+};
 
 const Dashboard = () => {
+  const { selectedOrg, setSelectedOrg } = useOrganizations();
+  // Fetch sales summary when an organization is selected
+  const { data: salesSummary, error, isLoading } = useGetSalesSummaryQuery(selectedOrg ?? 0, {
+    skip: !selectedOrg, // Skip fetching if no org is selected
+  });
+
+  useEffect(() => {
+    // console.log("Sales Summary Data:", salesSummary?.salesSummary);
+  }, [salesSummary]);
+
+  // Handle loading & error states
+  if (isLoading) return <p>Loading sales summary...</p>;
+  if (error) return <p>Error fetching sales summary</p>;
+
+  // Extract data from API response
+  const topSelling = salesSummary?.topSellingProducts || [];
+  const leastSelling = salesSummary?.leastSellingProducts || [];
+  const topProfitMargin = salesSummary?.topProfitMarginProducts.map((product: any) => ({
+    itemName: product.itemName,
+    profitMargin: product.profitMargin,
+    profitPercentage: product.profitPercentage || 0,
+    profit: product.profit || 0,
+    salePrice: product.salePrice || 0,
+    costPrice: product.costPrice || 0,
+  })) || [];
+  const leastProfitMargin = salesSummary?.leastProfitMarginProducts.map((product: any) => ({
+    itemName: product.itemName,
+    profitMargin: product.profitMargin,
+    profitPercentage: product.profitPercentage || 0,
+    profit: product.profit || 0,
+    salePrice: product.salePrice || 0,
+    costPrice: product.costPrice || 0,
+  })) || [];
+
   return (
-    <Box sx={{ p: 3, background: "#f5f6fa", minHeight: "100vh" }}>
-      <Typography variant="h4" fontWeight="bold" mb={3}>
-        Dashboard
-      </Typography>
-
-      {/* Stats Cards */}
-      <Grid container spacing={3}>
-        {stats.map((stat, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
-            <Paper sx={{ p: 3, display: "flex", alignItems: "center", borderRadius: "10px" }}>
-              <Box sx={{ p: 2, bgcolor: "#007bff", color: "white", borderRadius: "50%" }}>{stat.icon}</Box>
-              <Box ml={2}>
-                <Typography variant="h6">{stat.title}</Typography>
-                <Typography variant="h5" fontWeight="bold">
-                  {stat.count}
-                </Typography>
-              </Box>
-            </Paper>
-          </Grid>
+    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      {!localStorage.getItem("userOrg") && (
+        <div style={{
+          marginBottom: "20px", maxWidth: "300px"
+        }}>
+          <OrganizationSelector selectedOrg={selectedOrg} onChange={setSelectedOrg} />
+        </div>
+      )}
+      {/* Sales Summary Cards */}
+      <div style={{ display: "flex", gap: "10px", marginBottom: "20px", justifyContent: "space-between", marginTop: "20px" }}>
+        {[
+          { title: "Sales - Today", value: salesSummary?.salesSummary.today || 0 },
+          { title: "Sales - This Week", value: salesSummary?.salesSummary.thisWeek || 0 },
+          { title: "Sales - This Month", value: salesSummary?.salesSummary.thisMonth || 0 },
+          { title: "Sales - Last Quarter", value: salesSummary?.salesSummary.thisQuarter || 0 },
+          { title: "Sales - Last Quarter", value: salesSummary?.salesSummary.thisYear || 0 },
+        ].map((item, index) => (
+          <div key={index} style={salesCardStyle}>
+            <h4 style={{ margin: "0 0 5px 0", fontSize: "14px", color: "#555" }}>{item.title}</h4>
+            <p style={{ margin: 0, fontSize: "20px", fontWeight: "bold" }}>{item.value}</p>
+          </div>
         ))}
-      </Grid>
-
-      <Divider sx={{ my: 3 }} />
-
-      {/* Inventory Trends & Recent Activity */}
-      <Grid container spacing={3}>
-        {/* Inventory Trends Chart */}
-        <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 3, borderRadius: "10px" }}>
-            <Typography variant="h6" fontWeight="bold" mb={2}>
-              Inventory Trends
-            </Typography>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={inventoryData}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="stock" fill="#007bff" radius={[5, 5, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </Paper>
-        </Grid>
-
-        {/* Recent Activity */}
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 3, borderRadius: "10px" }}>
-            <Typography variant="h6" fontWeight="bold" mb={2}>
-              Recent Activity
-            </Typography>
-            {recentActivity.map((activity) => (
-              <Box key={activity.id} sx={{ mb: 2 }}>
-                <Typography variant="body1" fontWeight="bold">
-                  {activity.action}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  {activity.user} • {activity.date}
-                </Typography>
-              </Box>
-            ))}
-          </Paper>
-        </Grid>
-      </Grid>
-
-      <Divider sx={{ my: 3 }} />
-
-      {/* Top & Least Selling Products */}
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3, borderRadius: "10px" }}>
-            <Typography variant="h6" fontWeight="bold" mb={2}>
-              Top Selling Products
-            </Typography>
-            {topSellingProducts.map((product, index) => (
-              <Typography key={index} variant="body1">
-                {product.name}: {product.quantity} units
-              </Typography>
-            ))}
-          </Paper>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3, borderRadius: "10px" }}>
-            <Typography variant="h6" fontWeight="bold" mb={2}>
-              Least Selling Products
-            </Typography>
-            {leastSellingProducts.map((product, index) => (
-              <Typography key={index} variant="body1">
-                {product.name}: {product.quantity} units
-              </Typography>
-            ))}
-          </Paper>
-        </Grid>
-      </Grid>
-
-      <Divider sx={{ my: 3 }} />
-
-      {/* Profit Margin Reports */}
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3, borderRadius: "10px" }}>
-            <Typography variant="h6" fontWeight="bold" mb={2}>
-              Top Sale Profit Margin Products
-            </Typography>
-            {topProfitMarginProducts.map((product, index) => (
-              <Typography key={index} variant="body1">
-                {product.name}: {product.margin}
-              </Typography>
-            ))}
-          </Paper>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3, borderRadius: "10px" }}>
-            <Typography variant="h6" fontWeight="bold" mb={2}>
-              Least Sale Profit Margin Products
-            </Typography>
-            {leastProfitMarginProducts.map((product, index) => (
-              <Typography key={index} variant="body1">
-                {product.name}: {product.margin}
-              </Typography>
-            ))}
-          </Paper>
-        </Grid>
-      </Grid>
-    </Box>
+      </div>
+      <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+        <TopProductsTable title="Most Sold Product" products={topSelling} />
+        <TopProductsTable title="Least Sold Product" products={leastSelling} />
+      </div>
+      <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+        <ProfitMarginTable title="Top Profit Margin" products={topProfitMargin} />
+        <ProfitMarginTable title="Lowest Profit Margin" products={leastProfitMargin} />
+      </div>
+    </div>
   );
+};
+
+const salesCardStyle: CSSProperties = {
+  flex: 1,
+  padding: "15px",
+  border: "1px solid #ddd",
+  borderRadius: "8px",
+  textAlign: "center",
+  background: "#fff",
+  boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+  minWidth: "150px"
+};
+// Styles
+const cardStyle: CSSProperties = {
+  flex: 1,
+  padding: "10px",
+  border: "1px solid black",
+  textAlign: "center",
+  background: "#f5f5f5",
+};
+
+
+const containerStyle: React.CSSProperties = {
+  flex: 1,
+  padding: "20px",
+  border: "1px solid #ddd",
+  borderRadius: "8px",
+  background: "#fff",
+  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+};
+
+const titleStyle: React.CSSProperties = {
+  fontSize: "16px",
+  fontWeight: "bold",
+  marginBottom: "10px",
+};
+
+const tableStyle: React.CSSProperties = {
+  width: "100%",
+  borderCollapse: "collapse",
+};
+
+const thTdStyle: React.CSSProperties = {
+  borderBottom: "1px solid #ddd",
+  padding: "8px",
+  textAlign: "left",
+  fontSize: "14px",
+};
+
+const noDataStyle: React.CSSProperties = {
+  padding: "10px",
+  textAlign: "center",
+  fontSize: "14px",
+  color: "#888",
 };
 
 export default Dashboard;

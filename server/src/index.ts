@@ -18,6 +18,7 @@ import purchaseOrderRoutes from './routes/purchaseOrderRoutes';
 import grnRoutes from './routes/grnRoutes';
 import inventoryReportRoutes from './routes/inventoryReportRoutes';
 import emailRoutes from "./routes/emailRoutes"; 
+import salesOrderRoutes from './routes/salesOrderRoutes';
 // import dashboardRoutes from "./routes/dashboardRoutes";
 
 //Config
@@ -44,6 +45,7 @@ app.use("/supplier-sites", supplierSiteRoutes);
 app.use("/purchaseOrder", purchaseOrderRoutes);
 app.use("/grns", grnRoutes);
 app.use("/inventory-reports", inventoryReportRoutes);
+app.use("/salesOrder", salesOrderRoutes);
 app.use("/email", emailRoutes);
 // app.use("/dashboard", dashboardRoutes);
 
