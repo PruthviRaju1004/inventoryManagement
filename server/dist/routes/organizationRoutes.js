@@ -10,6 +10,7 @@ const upload_1 = require("../middleware/upload"); // Import file upload middlewa
 const router = express_1.default.Router();
 router.post("/create", auth_1.authenticateToken, auth_1.authorizeSuperAdmin, upload_1.upload.array("legalProofs", 5), organizationController_1.createOrganization);
 router.get("/", auth_1.authenticateToken, auth_1.authorizeSuperAdmin, organizationController_1.getOrganizations);
+router.get("/:id", auth_1.authenticateToken, auth_1.authorizeViewer, organizationController_1.getOrganizationById);
 router.put("/:id", auth_1.authenticateToken, auth_1.authorizeSuperAdmin, upload_1.upload.array("legalProofs", 5), organizationController_1.updateOrganization);
 router.delete("/:id", auth_1.authenticateToken, auth_1.authorizeSuperAdmin, organizationController_1.deleteOrganization);
 exports.default = router;

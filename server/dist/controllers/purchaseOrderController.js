@@ -15,14 +15,13 @@ const prisma = new client_1.PrismaClient();
 // Create Purchase Order (Only Super Admin or Organization Admin)
 const createPurchaseOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userRole = req.user.role;
-    if (userRole !== "super_admin" && userRole !== "admin") {
+    if (userRole === "viewer") {
         res.status(403).json({ message: "Forbidden: Only super admins or organization admins can create purchase orders" });
         return;
     }
     try {
-        const { organizationId, supplierId, totalAmount, orderDate, expectedDate, purchaseOrderItems, orderNumber, receivedDate, remarks } = req.body;
-        const userId = req.user.userId;
-        console.log("Received purchase order data:", req.body);
+        const { organizationId, supplierId, totalAmount, orderDate, expectedDate, purchaseOrderItems, receivedDate, remarks } = req.body;
+        const userId = req.user.id;
         if (!Array.isArray(purchaseOrderItems)) {
             res.status(400).json({ message: "purchaseOrderItems must be a non-empty array" });
             return;
@@ -71,7 +70,7 @@ const getPurchaseOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
     try {
         const userRole = req.user.role;
         const userOrgId = req.user.organizationId;
-        let { organizationId } = req.query;
+        let { organizationId, status } = req.query;
         if (userRole !== "super_admin") {
             organizationId = userOrgId;
         }
@@ -79,16 +78,16 @@ const getPurchaseOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
             res.status(400).json({ message: "Organization ID is required for super admins" });
             return;
         }
+        const whereClause = { organizationId: Number(organizationId) };
+        if (status) {
+            whereClause.status = status;
+        }
         const purchaseOrders = yield prisma.purchaseOrder.findMany({
+            where: whereClause,
             include: {
                 supplier: true,
-                purchaseOrderItems: {
-                    include: {
-                        item: true,
-                    },
-                },
+                purchaseOrderItems: true
             },
-            where: { organizationId: Number(organizationId) }
         });
         // Fetch supplier prices separately
         const formattedOrders = yield Promise.all(purchaseOrders.map((order) => __awaiter(void 0, void 0, void 0, function* () {
@@ -100,7 +99,7 @@ const getPurchaseOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
                     },
                     select: { supply_price: true },
                 });
-                return Object.assign(Object.assign(Object.assign({}, poItem), poItem.item), { itemId: poItem.item.id, supplierUnitPrice: (supplierProduct === null || supplierProduct === void 0 ? void 0 : supplierProduct.supply_price) || null });
+                return Object.assign(Object.assign({}, poItem), { itemId: poItem.itemId, supplierUnitPrice: (supplierProduct === null || supplierProduct === void 0 ? void 0 : supplierProduct.supply_price) || null });
             })));
             return Object.assign(Object.assign({}, order), { purchaseOrderItems: updatedItems });
         })));
@@ -125,7 +124,7 @@ const getPurchaseOrderById = (req, res) => __awaiter(void 0, void 0, void 0, fun
             where: { id: Number(purchaseOrderId) },
             include: {
                 supplier: true,
-                purchaseOrderItems: { include: { item: true } },
+                purchaseOrderItems: true,
             },
         });
         if (!purchaseOrder) {
@@ -133,7 +132,7 @@ const getPurchaseOrderById = (req, res) => __awaiter(void 0, void 0, void 0, fun
             return;
         }
         // Merge item properties into purchaseOrderItems
-        const formattedOrder = Object.assign(Object.assign({}, purchaseOrder), { purchaseOrderItems: purchaseOrder.purchaseOrderItems.map(poItem => (Object.assign(Object.assign(Object.assign({}, poItem), poItem.item), { itemId: poItem.item.id }))) });
+        const formattedOrder = Object.assign(Object.assign({}, purchaseOrder), { purchaseOrderItems: purchaseOrder.purchaseOrderItems.map(poItem => (Object.assign({}, poItem))) });
         res.status(200).json(formattedOrder);
     }
     catch (error) {

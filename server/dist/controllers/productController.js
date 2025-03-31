@@ -8,31 +8,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __rest = (this && this.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
-    return t;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteItem = exports.updateItem = exports.getItemById = exports.getItems = exports.createItem = void 0;
 const client_1 = require("@prisma/client");
+const inspector_1 = require("inspector");
 const prisma = new client_1.PrismaClient();
 // Create Item (Only Super Admin or Organization Admin)
 const createItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userRole = req.user.role;
-    if (userRole !== "super_admin" && userRole !== "admin") {
+    if (userRole === "viewer") {
         res.status(403).json({ message: "Forbidden: Only super admins or organization admins can create items" });
         return;
     }
     try {
         const { organizationId, name, itemCode, description, searchDescription, baseUom, secondaryUom, qtyPerUom, salesUom, purchaseUom, type, inventoryGroup, itemCategoryCode, parentCategory, productType, hsnSacCode, gstCredit, make, color, size, blocked, unitPrice, costingMethod, costPrice, commissionEligible, commissionFactor, businessUnitName, barcode, reorderLevel, leadTimeDays, safetyStockLevel, expirationDate, isPerishable } = req.body;
-        const userId = req.user.userId;
+        const existingOrg = yield prisma.organization.findUnique({
+            where: { id: organizationId }
+        });
+        if (!existingOrg) {
+            res.status(400).json({ message: "Invalid organization ID" });
+            return;
+        }
+        const userId = req.user.id;
         if (!itemCode) {
             res.status(400).json({ message: "Item code is required" });
             return;
@@ -44,7 +41,9 @@ const createItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         }
         const newItem = yield prisma.item.create({
             data: {
-                organizationId,
+                organization: {
+                    connect: { id: organizationId }
+                },
                 name,
                 itemCode,
                 description,
@@ -84,7 +83,7 @@ const createItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         res.status(201).json({ message: "Item created successfully", item: newItem });
     }
     catch (error) {
-        console.error("Error creating item:", error);
+        inspector_1.console.error("Error creating item:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 });
@@ -94,19 +93,30 @@ const getItems = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userRole = req.user.role;
         const userOrgId = req.user.organizationId;
-        let { organizationId } = req.query;
-        if (userRole !== "super_admin") {
-            organizationId = userOrgId;
+        let { organizationId, search, category } = req.query;
+        if (userRole === "admin") {
+            organizationId = userOrgId; // Admin can only access their own org's items
         }
         else if (!organizationId) {
             res.status(400).json({ message: "Organization ID is required for super admins" });
             return;
         }
-        const items = yield prisma.item.findMany({ where: { organizationId: Number(organizationId) } });
+        const filters = { organizationId: Number(organizationId) };
+        if (search) {
+            filters.OR = [
+                { name: { contains: search, mode: "insensitive" } },
+                { itemCode: { contains: search, mode: "insensitive" } },
+                { description: { contains: search, mode: "insensitive" } }
+            ];
+        }
+        if (category) {
+            filters.itemCategoryCode = category;
+        }
+        const items = yield prisma.item.findMany({ where: filters });
         res.status(200).json(items);
     }
     catch (error) {
-        console.error("Error fetching items:", error);
+        inspector_1.console.error("Error fetching items:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 });
@@ -115,6 +125,68 @@ exports.getItems = getItems;
 const getItemById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
+        const userOrgId = req.user.organizationId;
+        const userRole = req.user.role;
+        if (isNaN(Number(id))) {
+            res.status(400).json({ message: "Invalid item ID" });
+            return;
+        }
+        // Super admins can access any item; admins can only access items from their org
+        const item = yield prisma.item.findUnique({ where: { id: Number(id) } });
+        if (!item) {
+            res.status(404).json({ message: "Item not found" });
+            return;
+        }
+        if (userRole === "admin" && item.organizationId !== userOrgId) {
+            res.status(403).json({ message: "Forbidden: You do not have permission to view this item" });
+            return;
+        }
+        res.status(200).json(item);
+    }
+    catch (error) {
+        inspector_1.console.error("Error fetching item:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+exports.getItemById = getItemById;
+// Update Item
+const updateItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const userOrgId = req.user.organizationId;
+        const userRole = req.user.role;
+        if (isNaN(Number(id))) {
+            res.status(400).json({ message: "Invalid item ID" });
+            return;
+        }
+        // Get item and check if the user has access
+        const item = yield prisma.item.findUnique({ where: { id: Number(id) } });
+        if (!item) {
+            res.status(404).json({ message: "Item not found" });
+            return;
+        }
+        if (userRole === "admin" && item.organizationId !== userOrgId) {
+            res.status(403).json({ message: "Forbidden: You do not have permission to update this item" });
+            return;
+        }
+        const updatedItem = yield prisma.item.update({
+            where: { id: Number(id) },
+            data: Object.assign(Object.assign({}, req.body), { updatedAt: new Date() }),
+        });
+        res.status(200).json({ message: "Item updated successfully", item: updatedItem });
+    }
+    catch (error) {
+        inspector_1.console.error("Error updating item:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+exports.updateItem = updateItem;
+// Delete Item
+const deleteItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const userOrgId = req.user.organizationId;
+        const userRole = req.user.role;
         if (isNaN(Number(id))) {
             res.status(400).json({ message: "Invalid item ID" });
             return;
@@ -124,53 +196,15 @@ const getItemById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             res.status(404).json({ message: "Item not found" });
             return;
         }
-        res.status(200).json(item);
-    }
-    catch (error) {
-        console.error("Error fetching item:", error);
-        res.status(500).json({ message: "Internal server error" });
-    }
-});
-exports.getItemById = getItemById;
-// Update Item
-const updateItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { id } = req.params;
-        if (isNaN(Number(id))) {
-            res.status(400).json({ message: "Invalid item ID" });
-            return;
-        }
-        const _a = req.body, { expirationDate } = _a, otherData = __rest(_a, ["expirationDate"]);
-        const updatedItem = yield prisma.item.update({
-            where: { id: Number(id) },
-            data: Object.assign(Object.assign({}, otherData), { expirationDate: expirationDate ? new Date(expirationDate) : null, updatedAt: new Date() }),
-        });
-        res.status(200).json({ message: "Item updated successfully", item: updatedItem });
-    }
-    catch (error) {
-        console.error("Error updating item:", error);
-        res.status(500).json({ message: "Internal server error" });
-    }
-});
-exports.updateItem = updateItem;
-// Delete Item
-const deleteItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { id } = req.params;
-        if (isNaN(Number(id))) {
-            res.status(400).json({ message: "Invalid item ID" });
-            return;
-        }
-        const existingItem = yield prisma.item.findUnique({ where: { id: Number(id) } });
-        if (!existingItem) {
-            res.status(404).json({ message: "Item not found" });
+        if (userRole === "admin" && item.organizationId !== userOrgId) {
+            res.status(403).json({ message: "Forbidden: You do not have permission to delete this item" });
             return;
         }
         yield prisma.item.delete({ where: { id: Number(id) } });
         res.status(200).json({ message: "Item deleted successfully" });
     }
     catch (error) {
-        console.error("Error deleting item:", error);
+        inspector_1.console.error("Error deleting item:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 });

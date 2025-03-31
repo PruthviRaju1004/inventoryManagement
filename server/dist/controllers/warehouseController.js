@@ -9,19 +9,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.reserveStock = exports.updateWarehouseStock = exports.getWarehouseStock = exports.addItemToWarehouse = exports.deleteWarehouse = exports.updateWarehouse = exports.getWarehouses = exports.createWarehouse = void 0;
+exports.getWarehouseProducts = exports.reserveStock = exports.updateWarehouseStock = exports.getWarehouseStock = exports.addItemToWarehouse = exports.deleteWarehouse = exports.updateWarehouse = exports.getWarehouseById = exports.getWarehouses = exports.createWarehouse = void 0;
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 // Create Warehouse (Only Super Admin or Organization Admin)
 const createWarehouse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userRole = req.user.role;
-    if (userRole === "super_admin" && userRole !== "admin") {
+    if (userRole === "viewer") {
         res.status(403).json({ message: "Forbidden: Only super admins or organization admins can create warehouses" });
         return;
     }
     try {
         const { organizationId, name, code, address, contactEmail, contactPhone, latitude, longitude, sqFoot, noOfDocks, lotSize, shelvesRacks } = req.body;
-        const userId = req.user.userId;
+        const userId = req.user.id;
         if (!code) {
             res.status(400).json({ message: "Warehouse code is required" });
             return;
@@ -61,15 +61,23 @@ const getWarehouses = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     try {
         const userRole = req.user.role;
         const userOrgId = req.user.organizationId;
-        let { organizationId } = req.query;
+        let { organizationId, search } = req.query;
         if (userRole !== "super_admin") {
             organizationId = userOrgId;
         }
         else if (!organizationId) {
+            // console.log("Organization ID is required for super admins");
             res.status(400).json({ message: "Organization ID is required for super admins" });
             return;
         }
-        const warehouses = yield prisma.warehouse.findMany({ where: { organizationId: Number(organizationId) } });
+        const filters = { organizationId: Number(organizationId) };
+        if (search) {
+            filters.OR = [
+                { name: { contains: search, mode: "insensitive" } },
+                { code: { contains: search, mode: "insensitive" } }
+            ];
+        }
+        const warehouses = yield prisma.warehouse.findMany({ where: filters, orderBy: { name: "asc" } });
         res.status(200).json(warehouses);
     }
     catch (error) {
@@ -78,6 +86,28 @@ const getWarehouses = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.getWarehouses = getWarehouses;
+const getWarehouseById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        if (isNaN(Number(id))) {
+            res.status(400).json({ message: "Invalid warehouse ID" });
+            return;
+        }
+        const warehouse = yield prisma.warehouse.findUnique({
+            where: { id: Number(id) },
+        });
+        if (!warehouse) {
+            res.status(404).json({ message: "Warehouse not found" });
+            return;
+        }
+        res.status(200).json(warehouse);
+    }
+    catch (error) {
+        console.error("Error fetching warehouse:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+exports.getWarehouseById = getWarehouseById;
 const updateWarehouse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
@@ -227,3 +257,53 @@ const reserveStock = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.reserveStock = reserveStock;
+const getWarehouseProducts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { warehouseId } = req.params;
+        const products = yield prisma.inventoryReport.findMany({
+            where: { warehouseId: Number(warehouseId) },
+            select: {
+                itemId: true,
+                itemName: true,
+                sku: true,
+                batchNumber: true,
+                binLocation: true,
+                subWarehouseName: true,
+                lotNumber: true,
+                serialNumber: true,
+                manufacturingDate: true,
+                expiryDate: true,
+                stockInwardDate: true,
+                stockOutwardDate: true,
+                providedQuantity: true,
+                supplierPrice: true,
+                fobAmount: true,
+                allocation: true,
+                cAndHCharges: true,
+                freight: true,
+                costBeforeDuty: true,
+                dutyCharges: true,
+                costBeforeProfitMargin: true,
+                costPerUnit: true,
+                sellingPrice: true,
+                reorderLevel: true,
+                warehouseName: true,
+                category: true,
+                subCategory: true,
+                unitOfMeasure: true,
+                barcode: true,
+            },
+        });
+        if (!products.length) {
+            res.status(404).json({ message: "No products found for this warehouse" });
+            return;
+        }
+        res.json(products);
+        return;
+    }
+    catch (error) {
+        console.error("Error fetching warehouse products:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+exports.getWarehouseProducts = getWarehouseProducts;

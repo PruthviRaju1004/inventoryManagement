@@ -7,8 +7,13 @@ const express_1 = __importDefault(require("express"));
 const customerController_1 = require("../controllers/customerController");
 const auth_1 = require("../middleware/auth");
 const router = express_1.default.Router();
-router.post("/create", auth_1.authenticateToken, auth_1.authorizeSuperAdmin, customerController_1.createCustomer);
-router.get("/", auth_1.authenticateToken, auth_1.authorizeSuperAdmin, customerController_1.getCustomers);
-router.put("/:id", auth_1.authenticateToken, auth_1.authorizeSuperAdmin, customerController_1.updateCustomer);
-router.delete("/:id", auth_1.authenticateToken, auth_1.authorizeSuperAdmin, customerController_1.deleteCustomer);
+// Route to create a customer
+router.post("/create", auth_1.authenticateToken, auth_1.authorizeAdmin, customerController_1.createCustomer);
+// Route to get customers (Admin, Manager, Viewer can view based on permissions)
+router.get("/", auth_1.authenticateToken, auth_1.authorizeViewer, customerController_1.getCustomers);
+// Route to update a customer (Admin, Manager can update based on permissions)
+router.put("/:id", auth_1.authenticateToken, auth_1.authorizeManager, customerController_1.updateCustomer);
+// Route to delete a customer (Only Super Admin or Admin can delete based on permissions)
+router.delete("/:id", auth_1.authenticateToken, auth_1.authorizeAdmin, customerController_1.deleteCustomer);
+router.get("/:id", auth_1.authenticateToken, auth_1.authorizeViewer, customerController_1.getCustomerById);
 exports.default = router;

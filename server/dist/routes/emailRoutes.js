@@ -8,4 +8,5 @@ const emailController_1 = require("../controllers/emailController");
 const auth_1 = require("../middleware/auth"); // Ensure authentication
 const router = express_1.default.Router();
 router.post("/send", auth_1.authenticateToken, emailController_1.sendEmail);
+router.post("/send-whatsapp-text", auth_1.authenticateToken, emailController_1.sendWhatsAppText);
 exports.default = router;

@@ -20,7 +20,7 @@ const createGRN = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             res.status(401).json({ message: "Unauthorized" });
             return;
         }
-        if (!["super_admin", "admin"].includes(user.role)) {
+        if (!["super_admin", "admin", "manager"].includes(user.role)) {
             res.status(403).json({ message: "Forbidden: Only super admins or organization admins can create GRNs" });
             return;
         }
@@ -30,14 +30,13 @@ const createGRN = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return;
         }
         const existingGRN = yield prisma.gRN.findUnique({
-            where: { grnNumber } // Now this will work!
+            where: { grnNumber }
         });
         if (existingGRN) {
             res.status(400).json({ message: "GRN already exist" });
             return;
         }
-        // Ensure userId is valid
-        const userId = Number(user.userId);
+        const userId = Number(user.id);
         if (isNaN(userId)) {
             res.status(400).json({ message: "Invalid user ID" });
             return;
@@ -46,7 +45,6 @@ const createGRN = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return `GRN-${Math.floor(Math.random() * 1000000)}`;
         };
         const orderNumberToUse = generateOrderNumber();
-        // Create GRN
         const newGRN = yield prisma.gRN.create({
             data: {
                 organizationId: Number(organizationId),
@@ -100,7 +98,7 @@ const getGRNs = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             res.status(401).json({ message: "Unauthorized" });
             return;
         }
-        let { organizationId } = req.query;
+        let { organizationId, status } = req.query;
         if (user.role !== "super_admin") {
             organizationId = user.organizationId;
         }
@@ -113,8 +111,12 @@ const getGRNs = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             res.status(400).json({ message: "Invalid organization ID" });
             return;
         }
+        const query = { organizationId: orgId };
+        if (status) {
+            query.status = status;
+        }
         const grns = yield prisma.gRN.findMany({
-            where: { organizationId: orgId },
+            where: query,
             include: { supplier: true, warehouse: true, grnLineItems: { include: { item: true } } },
         });
         res.status(200).json(grns);
@@ -151,23 +153,79 @@ const getGRNById = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 exports.getGRNById = getGRNById;
 // Update GRN Status
 const updateGRN = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.user.id;
     try {
         const grnId = Number(req.params.id);
-        console.log("grnId", grnId);
         if (isNaN(grnId)) {
             res.status(400).json({ message: "Invalid GRN ID" });
             return;
         }
-        const { status, remarks, updatedBy } = req.body;
+        const { status, remarks, grnLineItems, totalAmount } = req.body;
         if (!Object.values(client_1.GRNStatus).includes(status)) {
             res.status(400).json({ message: "Invalid status value" });
             return;
         }
-        const updatedGRN = yield prisma.gRN.update({
-            where: { grnId },
-            data: { status: status, remarks },
+        // Fetch existing line items for the given GRN
+        const existingLineItems = yield prisma.gRNLineItem.findMany({
+            where: { grnId }
         });
-        res.status(200).json({ message: "GRN updated successfully", grn: updatedGRN });
+        const existingItemIds = new Set(existingLineItems.map((item) => item.lineId));
+        const incomingItemIds = new Set(grnLineItems.map((item) => item.id));
+        // Update existing items
+        const updateLineItems = grnLineItems
+            .filter((item) => existingItemIds.has(item.id))
+            .map((item) => prisma.gRNLineItem.update({
+            where: { lineId: item.lineId },
+            data: {
+                receivedQty: item.receivedQty,
+                unitPrice: item.unitPrice,
+                lineTotal: item.lineTotal,
+                batchNumber: item.batchNumber,
+                manufacturingDate: item.manufacturingDate,
+                expiryDate: item.expiryDate,
+                storageLocation: item.storageLocation,
+                remarks: item.remarks,
+            },
+        }));
+        // Add new items
+        const createLineItems = grnLineItems
+            .filter((item) => !existingItemIds.has(item.id))
+            .map((item) => prisma.gRNLineItem.create({
+            data: {
+                grnId,
+                itemId: item.itemId,
+                itemName: item.itemName,
+                orderedQty: item.orderedQty,
+                receivedQty: item.receivedQty,
+                unitPrice: item.unitPrice,
+                lineTotal: item.lineTotal,
+                batchNumber: item.batchNumber,
+                manufacturingDate: item.manufacturingDate,
+                expiryDate: item.expiryDate,
+                storageLocation: item.storageLocation,
+                remarks: item.remarks,
+                uom: item.uom || "PCS",
+                createdBy: Number(userId),
+                updatedBy: Number(userId),
+            },
+        }));
+        // Delete removed items
+        const deleteLineItems = existingLineItems
+            .filter((item) => !incomingItemIds.has(item.lineId))
+            .map((item) => prisma.gRNLineItem.delete({
+            where: { lineId: item.lineId },
+        }));
+        // Execute all updates, creates, and deletes in a transaction
+        yield prisma.$transaction([
+            prisma.gRN.update({
+                where: { grnId },
+                data: { status, remarks, totalAmount: parseFloat(totalAmount) },
+            }),
+            ...updateLineItems,
+            ...createLineItems,
+            ...deleteLineItems,
+        ]);
+        res.status(200).json({ message: "GRN and Line Items updated successfully" });
     }
     catch (error) {
         console.error("Error updating GRN:", error);
@@ -179,7 +237,7 @@ exports.updateGRN = updateGRN;
 const deleteGRN = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const grnId = Number(req.params.grnId);
-        console.log("grnId", grnId);
+        // console.log("grnId", grnId);
         if (isNaN(grnId)) {
             res.status(400).json({ message: "Invalid GRN ID" });
             return;

@@ -9,8 +9,11 @@ const auth_1 = require("../middleware/auth");
 const router = express_1.default.Router();
 router.post("/login", userController_1.login); // Super Admin Login
 router.get("/me", auth_1.authenticateToken, userController_1.getCurrentUser); // Get Current User
-router.post("/users", auth_1.authenticateToken, auth_1.authorizeSuperAdmin, userController_1.createUser); // Create a new user (Super Admin only)
-router.get("/users/organization/:organizationId", auth_1.authenticateToken, userController_1.getUsersByOrganization); // Get users by organization
-router.put("/users/:userId/role", auth_1.authenticateToken, auth_1.authorizeSuperAdmin, userController_1.updateUserRole); // Update user role (Super Admin only)
-router.delete("/users/:userId", auth_1.authenticateToken, auth_1.authorizeSuperAdmin, userController_1.deleteUser);
+router.post("/create", auth_1.authenticateToken, auth_1.authorizeAdmin, userController_1.createUser); // Create a new user (Super Admin only)
+router.get("/", auth_1.authenticateToken, auth_1.authorizeViewer, userController_1.getUsersByOrganization); // Get users by organization
+router.put("/:id", auth_1.authenticateToken, auth_1.authorizeManager, userController_1.updateUserRole); // Update user role (Super Admin only)
+router.delete("/:id", auth_1.authenticateToken, auth_1.authorizeAdmin, userController_1.deleteUser);
+router.post("/forgot-password", userController_1.forgotPassword); // Request a password reset link
+router.post("/reset-password", userController_1.resetPassword); // Reset user password with reset token
+router.post("/verify-registration", userController_1.verifyRegistration); // Handle registration verification
 exports.default = router;

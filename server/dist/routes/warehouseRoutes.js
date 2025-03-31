@@ -7,13 +7,14 @@ const express_1 = __importDefault(require("express"));
 const warehouseController_1 = require("../controllers/warehouseController");
 const auth_1 = require("../middleware/auth");
 const router = express_1.default.Router();
-router.post("/create", auth_1.authenticateToken, auth_1.authorizeSuperAdmin, warehouseController_1.createWarehouse);
-router.get("/", auth_1.authenticateToken, auth_1.authorizeSuperAdmin, warehouseController_1.getWarehouses); // Allow both super_admin & admin
-router.put("/:id", auth_1.authenticateToken, auth_1.authorizeSuperAdmin, warehouseController_1.updateWarehouse);
-router.delete("/:id", auth_1.authenticateToken, auth_1.authorizeSuperAdmin, warehouseController_1.deleteWarehouse);
+router.post("/create", auth_1.authenticateToken, auth_1.authorizeManager, warehouseController_1.createWarehouse);
+router.get("/", auth_1.authenticateToken, auth_1.authorizeViewer, warehouseController_1.getWarehouses); // Allow both super_admin & admin
+router.get("/:id", auth_1.authenticateToken, auth_1.authorizeViewer, warehouseController_1.getWarehouseById); // Allow both super_admin & admin
+router.put("/:id", auth_1.authenticateToken, auth_1.authorizeManager, warehouseController_1.updateWarehouse);
+router.delete("/:id", auth_1.authenticateToken, auth_1.authorizeAdmin, warehouseController_1.deleteWarehouse);
 router.post("/:warehouseId/items", auth_1.authenticateToken, auth_1.authorizeSuperAdmin, warehouseController_1.addItemToWarehouse);
 // Get stock levels for a warehouse
-router.get("/:warehouseId/stock", auth_1.authenticateToken, auth_1.authorizeSuperAdmin, warehouseController_1.getWarehouseStock);
+router.get("/:warehouseId/stock", auth_1.authenticateToken, auth_1.authorizeViewer, warehouseController_1.getWarehouseProducts);
 // Update stock levels for a warehouse
 router.put("/:warehouseId/stock", auth_1.authenticateToken, auth_1.authorizeSuperAdmin, warehouseController_1.updateWarehouseStock);
 // Reserve stock for orders or allocations

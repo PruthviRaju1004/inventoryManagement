@@ -7,6 +7,7 @@ exports.authorizeViewer = exports.authorizeManager = exports.authorizeAdmin = ex
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const SECRET_KEY = process.env.JWT_SECRET || "your_secret_key";
 const authenticateToken = (req, res, next) => {
+    var _a;
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
         res.status(401).json({ message: "Unauthorized: No token provided" });
@@ -15,46 +16,92 @@ const authenticateToken = (req, res, next) => {
     const token = authHeader.split(" ")[1];
     try {
         const decoded = jsonwebtoken_1.default.verify(token, SECRET_KEY);
-        req.user = decoded;
+        console.error("Decoded token:", decoded); // Debugging log
+        req.user = {
+            id: decoded.userId,
+            role: decoded.role,
+            organizationId: (_a = decoded.organizationId) !== null && _a !== void 0 ? _a : null // Explicitly set null if undefined
+        };
         next();
     }
     catch (error) {
         res.status(403).json({ message: "Forbidden: Invalid token" });
-        return;
     }
 };
 exports.authenticateToken = authenticateToken;
-// 🔹 Middleware to check if user is Super Admin (roleId = 1)
+// 🔹 Super Admin Authorization
 const authorizeSuperAdmin = (req, res, next) => {
-    if (req.user.roleId !== 1) {
+    if (!req.user || req.user.role !== "super_admin") {
         res.status(403).json({ message: "Forbidden: Only super admins can perform this action" });
         return;
     }
     next();
 };
 exports.authorizeSuperAdmin = authorizeSuperAdmin;
-// 🔹 Middleware to check if user is Admin or higher (roleId = 1 or 2)
+// 🔹 Admin Authorization
 const authorizeAdmin = (req, res, next) => {
-    if (![1, 2].includes(req.user.roleId)) {
-        res.status(403).json({ message: "Forbidden: Only admins and super admins can perform this action" });
+    if (!req.user) {
+        res.status(401).json({ message: "Unauthorized: User not found" });
         return;
     }
-    next();
+    if (req.user.role === "super_admin") {
+        next(); // Super Admin has full access
+        return;
+    }
+    if (req.user.role === "admin") {
+        if (!req.user.organizationId) {
+            res.status(403).json({ message: "Forbidden: Admin must belong to an organization" });
+            return;
+        }
+        next();
+    }
+    else {
+        res.status(403).json({ message: "Forbidden: Only admins can perform this action" });
+    }
 };
 exports.authorizeAdmin = authorizeAdmin;
-// 🔹 Middleware to check if user is Manager or higher (roleId = 1, 2, or 3)
+// 🔹 Manager Authorization
 const authorizeManager = (req, res, next) => {
-    if (![1, 2, 3].includes(req.user.roleId)) {
-        res.status(403).json({ message: "Forbidden: Only managers, admins, and super admins can perform this action" });
+    if (!req.user) {
+        res.status(401).json({ message: "Unauthorized: User not found" });
         return;
     }
-    next();
+    if (req.user.role === "super_admin" || req.user.role === "admin") {
+        next(); // Super Admin has full access
+        return;
+    }
+    if (req.user.role === "manager") {
+        if (!req.user.organizationId) {
+            res.status(403).json({ message: "Forbidden: Manager must belong to an organization" });
+            return;
+        }
+        if (req.method === "DELETE") {
+            res.status(403).json({ message: "Forbidden: Managers cannot delete records" });
+            return;
+        }
+        next();
+    }
+    else {
+        res.status(403).json({ message: "Forbidden: Only managers can perform this action" });
+    }
 };
 exports.authorizeManager = authorizeManager;
-// 🔹 Middleware to check if user is Viewer or higher (roleId = 1, 2, 3, or 4)
+// 🔹 Viewer Authorization
 const authorizeViewer = (req, res, next) => {
-    if (![1, 2, 3, 4].includes(req.user.roleId)) {
+    if (!req.user) {
+        res.status(401).json({ message: "Unauthorized: User not found" });
+        return;
+    }
+    if (req.user.role === "super_admin") {
+        next(); // Super Admin has full access
+        return;
+    }
+    if (!["admin", "manager", "viewer"].includes(req.user.role)) {
         res.status(403).json({ message: "Forbidden: Only authorized users can perform this action" });
+        return;
+    }
+    if (req.method !== "GET") {
+        res.status(403).json({ message: "Forbidden: Viewers can only view data" });
         return;
     }
     next();

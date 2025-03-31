@@ -15,12 +15,12 @@ const prisma = new client_1.PrismaClient();
 // Create Inventory Report
 const createInventoryReport = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        if (!req.user || !req.user.userId) {
+        if (!req.user || !req.user.id) {
             res.status(401).json({ message: "Unauthorized: User not found" });
             return;
         }
-        const userId = req.user.userId;
-        const { organizationId, itemId, itemName, sku, batchNumber, lotNumber, serialNumber, manufacturingDate, expiryDate, stockInwardDate, stockOutwardDate, openingQuantity, currentQuantity, inwardQuantity, outwardQuantity, committedQuantity, availableQuantity, damagedQuantity, unitCost, totalValue, reorderLevel, warehouseId, warehouseName, subWarehouseName, binLocation, category, subCategory, unitOfMeasure, barcode } = req.body;
+        const userId = req.user.id;
+        const { organizationId, itemId, itemName, sku, batchNumber, lotNumber, serialNumber, manufacturingDate, expiryDate, stockInwardDate, stockOutwardDate, providedQuantity, supplierPrice, fobAmount, allocation, cAndHCharges, freight, costBeforeDuty, dutyCharges, costBeforeProfitMargin, costPerUnit, sellingPrice, reorderLevel, warehouseId, warehouseName, subWarehouseName, binLocation, category, subCategory, unitOfMeasure, barcode } = req.body;
         if (!organizationId || !itemName || !sku) {
             res.status(400).json({ message: "Missing required fields: organizationId, itemName, or sku" });
             return;
@@ -46,15 +46,17 @@ const createInventoryReport = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 expiryDate: parseDate(expiryDate),
                 stockInwardDate: parseDate(stockInwardDate),
                 stockOutwardDate: parseDate(stockOutwardDate),
-                openingQuantity,
-                currentQuantity,
-                inwardQuantity,
-                outwardQuantity,
-                committedQuantity,
-                availableQuantity,
-                damagedQuantity,
-                unitCost,
-                totalValue,
+                providedQuantity,
+                supplierPrice,
+                fobAmount,
+                allocation,
+                cAndHCharges,
+                freight,
+                costBeforeDuty,
+                dutyCharges,
+                costBeforeProfitMargin,
+                costPerUnit,
+                sellingPrice,
                 reorderLevel,
                 warehouseId,
                 warehouseName,
@@ -77,9 +79,10 @@ const createInventoryReport = (req, res) => __awaiter(void 0, void 0, void 0, fu
 });
 exports.createInventoryReport = createInventoryReport;
 // Get All Inventory Reports
-const getAllInventoryReports = (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getAllInventoryReports = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let { organizationId } = req.query;
     try {
-        const inventoryReports = yield prisma.inventoryReport.findMany();
+        const inventoryReports = yield prisma.inventoryReport.findMany({ where: { organizationId: Number(organizationId) } });
         res.json(inventoryReports);
     }
     catch (error) {
@@ -120,7 +123,7 @@ const updateInventoryReport = (req, res) => __awaiter(void 0, void 0, void 0, fu
             res.status(400).json({ message: "Invalid Inventory Report ID" });
             return;
         }
-        const userId = (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.userId;
+        const userId = (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id;
         if (!userId) {
             res.status(401).json({ message: "Unauthorized: User not found" });
             return;

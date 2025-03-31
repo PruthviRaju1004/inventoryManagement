@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteOrganization = exports.updateOrganization = exports.getOrganizations = exports.createOrganization = void 0;
+exports.deleteOrganization = exports.updateOrganization = exports.getOrganizationById = exports.getOrganizations = exports.createOrganization = void 0;
 const client_1 = require("@prisma/client");
 const validateDomain_1 = require("../utils/validateDomain");
 const prisma = new client_1.PrismaClient();
@@ -21,8 +21,7 @@ const createOrganization = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
     try {
         const { name, contactEmail, contactPhone, address, taxId, dunsNumber, website, socialMedia } = req.body;
-        const userId = req.user.userId;
-        console.log("User ID:", userId); // Debugging log
+        const userId = req.user.id;
         // Validate website domain matches email domain
         if (website && !(0, validateDomain_1.validateDomain)(contactEmail, website)) {
             res.status(400).json({ message: "Website domain must match email domain" });
@@ -50,7 +49,7 @@ const createOrganization = (req, res) => __awaiter(void 0, void 0, void 0, funct
                 updatedBy: Number(userId), // ✅ Ensure it's a number
             },
         });
-        console.log("new org", newOrg);
+        // console.log("new org", newOrg)
         res.status(201).json({ message: "Organization created successfully", organization: newOrg });
     }
     catch (error) {
@@ -61,14 +60,10 @@ const createOrganization = (req, res) => __awaiter(void 0, void 0, void 0, funct
 exports.createOrganization = createOrganization;
 // Get Organizations (Only Super Admin)
 const getOrganizations = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    if (req.user.role !== "super_admin") {
-        res.status(403).json({ message: "Forbidden: Only super admins can view organizations" });
-        return;
-    }
     try {
         const organizations = yield prisma.organization.findMany();
         // Convert file paths to URLs
-        const updatedOrganizations = organizations.map(org => (Object.assign(Object.assign({}, org), { legalProofs: Array.isArray(org.legalProofs) ? org.legalProofs.filter((file) => typeof file === 'string').map((file) => `https://inventorymanagement-production-6ff8.up.railway.app${file}`) : [] })));
+        const updatedOrganizations = organizations.map(org => (Object.assign(Object.assign({}, org), { legalProofs: Array.isArray(org.legalProofs) ? org.legalProofs.filter((file) => typeof file === 'string').map((file) => `http://localhost:8000${file}`) : [] })));
         res.status(200).json(updatedOrganizations);
     }
     catch (error) {
@@ -77,6 +72,30 @@ const getOrganizations = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.getOrganizations = getOrganizations;
+const getOrganizationById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const organization = yield prisma.organization.findUnique({
+            where: { id: Number(id) },
+        });
+        if (!organization) {
+            res.status(404).json({ message: "Organization not found" });
+            return;
+        }
+        // Convert file paths to URLs
+        const updatedOrganization = Object.assign(Object.assign({}, organization), { legalProofs: Array.isArray(organization.legalProofs)
+                ? organization.legalProofs
+                    .filter((file) => typeof file === "string")
+                    .map((file) => `https://inventorymanagement-production-6ff8.up.railway.app${file}`)
+                : [] });
+        res.status(200).json(updatedOrganization);
+    }
+    catch (error) {
+        console.error("Error fetching organization by ID:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+exports.getOrganizationById = getOrganizationById;
 // Update Organization (Only Super Admin)
 const updateOrganization = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (req.user.role !== "super_admin") {
