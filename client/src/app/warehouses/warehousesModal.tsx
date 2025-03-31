@@ -70,7 +70,7 @@
         lotSize: formData.lotSize ? parseInt(formData.lotSize, 10) : 0,
         shelvesRacks: formData.shelvesRacks ? parseInt(formData.shelvesRacks, 10) : 0,
       };
-      console.log(apiData)
+      // console.log(apiData)
 
       if (warehouse?.id) {
         await updateWarehouse({ id: warehouse.id, data: apiData });

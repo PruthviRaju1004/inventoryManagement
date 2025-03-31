@@ -29,6 +29,8 @@ const StockModal = ({ warehouseId, onClose }: { warehouseId: number; onClose: ()
                     />
                     <input
                         type="number"
+                        inputMode="numeric" 
+                        onWheel={(e) => (e.target as HTMLInputElement).blur()}
                         name="quantity"
                         value={quantity}
                         onChange={(e) => setQuantity(Math.max(0, Number(e.target.value)).toString())}

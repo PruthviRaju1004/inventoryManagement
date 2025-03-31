@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { Pencil, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import {
@@ -17,17 +17,38 @@ import useOrganizations from "../{hooks}/useOrganizations";
 import useDeleteDialog from "../{hooks}/useDeleteDialog";
 import React from "react";
 import { useRouter } from "next/navigation";
+import { useAppSelector } from "../redux";
+import debounce from "lodash.debounce";
+import SearchBar from "../{components}/searchBar";
 
 const WarehousesModal = dynamic(() => import("./warehousesModal"), { ssr: false });
 
 const Warehouses = () => {
     const router = useRouter();
     const { selectedOrg, setSelectedOrg } = useOrganizations();
-    const { data: warehouses } = useGetWarehousesQuery(selectedOrg ?? 0, { skip: !selectedOrg });
+    const [search, setSearch] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const organizationId = localStorage.getItem("userOrg") ? Number(localStorage.getItem("userOrg")) : selectedOrg ?? 0;
+    const { data: warehouses } = useGetWarehousesQuery({ organizationId, search: debouncedSearch }, { skip: !selectedOrg });
     const [deleteWarehouse] = useDeleteWarehouseMutation();
     const [open, setOpen] = useState(false);
     const [editingWarehouse, setEditingWarehouse] = useState<Warehouse | null>(null);
     const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
+    const user = useAppSelector((state) => state.user);
+    const userRole = user?.roleId || 4;
+
+    const filterWarehouses = useMemo(() => {
+        return warehouses?.filter((warehouse) =>
+            warehouse.name.toLowerCase().includes(search.toLowerCase()) ||
+            warehouse.code.toLowerCase().includes(search.toLowerCase())
+        ) || [];
+    }, [warehouses, search]);
+
+    const debouncedSetSearch = useMemo(() => debounce(setDebouncedSearch, 500), []);
+
+    useEffect(() => {
+        debouncedSetSearch(search);
+    }, [search, debouncedSetSearch]);
 
     const handleOpen = (warehouse: Warehouse | null = null) => {
         setEditingWarehouse(warehouse);
@@ -50,7 +71,7 @@ const Warehouses = () => {
         {
             id: "expand",
             header: () => null,
-            cell: ({ row }) => (
+            cell: ({ row }: { row: any }) => (
                 <button onClick={() => toggleExpandRow(row.original.id)} className="p-2 text-gray-500">
                     {expandedRows[row.original.id] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>
@@ -59,7 +80,7 @@ const Warehouses = () => {
         {
             accessorKey: "name",
             header: "Warehouse Name",
-            cell: ({ row }) => (
+            cell: ({ row }: { row: any }) => (
                 <button onClick={() => router.push(`/warehouses/${row.original.id}`)} className="text-blue-600 hover:underline">
                     {row.original.name}
                 </button>
@@ -71,24 +92,32 @@ const Warehouses = () => {
         { accessorKey: "contactPhone", header: "Phone" },
         { accessorKey: "latitude", header: "Latitude" },
         { accessorKey: "longitude", header: "Longitude" },
-        {
-            id: "actions",
-            header: "Actions",
-            cell: ({ row }) => (
-                <div className="flex gap-2">
-                    <button onClick={() => handleOpen(row.original)} className="p-2 text-primary_btn_color rounded">
-                        <Pencil size={16} />
-                    </button>
-                    <button onClick={() => handleDeleteClick(String(row.original.id))} className="p-2 text-primary_btn_color rounded">
-                        <Trash2 size={16} />
-                    </button>
-                </div>
-            ),
-        },
+        ...(userRole !== 4
+            ? [
+                {
+                    id: "actions",
+                    header: "Actions",
+                    cell: ({ row }: { row: any }) => (
+                        <div className="flex gap-2">
+                            {userRole !== 4 && (
+                                <button onClick={() => handleOpen(row.original)} className="p-2 text-primary_btn_color rounded">
+                                    <Pencil size={16} />
+                                </button>
+                            )}
+                            {userRole !== 4 && userRole !== 3 && (
+                                <button onClick={() => handleDeleteClick(String(row.original.id))} className="p-2 text-primary_btn_color rounded">
+                                    <Trash2 size={16} />
+                                </button>
+                            )}
+                        </div>
+                    ),
+                },
+            ]
+            : [])
     ];
 
     const table = useReactTable({
-        data: warehouses || [],
+        data: filterWarehouses,
         columns,
         state: { expanded: expandedRows },
         getCoreRowModel: getCoreRowModel(),
@@ -97,13 +126,22 @@ const Warehouses = () => {
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="flex justify-between gap-4">
-                <div>
-                    <OrganizationSelector selectedOrg={selectedOrg} onChange={setSelectedOrg} />
+            <h1 className="text-2xl font-semibold">Warehouses</h1>
+            <div className="flex justify-between gap-4 align-center">
+                <div className="flex gap-4">
+                    {!localStorage.getItem("userOrg") &&
+                        <div>
+                            <OrganizationSelector selectedOrg={selectedOrg} onChange={setSelectedOrg} />
+                        </div>}
+                    <div>
+                        <SearchBar onSearch={setSearch} placeholder="Search Warehouses by Warehouse Name and Code" />
+                    </div>
                 </div>
-                <button onClick={() => handleOpen()} className="mt-4 bg-primary_btn_color text-white font-medium text-base px-4 h-12 rounded-sm">
-                    Create Warehouse
-                </button>
+                {userRole !== 4 &&
+                    <button onClick={() => handleOpen()} className="bg-primary_btn_color text-white font-medium text-base px-4 h-12 rounded-sm">
+                        Create Warehouse
+                    </button>
+                }
             </div>
 
             {/* Table */}
