@@ -607,7 +607,7 @@ export interface SalesSummaryResponse {
 
 export const api = createApi({
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000",
+    baseUrl: "https://inventorymanagement-production-6ff8.up.railway.app",
     // baseUrl: 'http://localhost:8000',
     prepareHeaders: (headers) => {
       const token = localStorage.getItem("token");
