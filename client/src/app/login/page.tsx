@@ -2,10 +2,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLoginUserMutation } from "@/state/api";
+import { useAppDispatch } from "../redux";
+import { setUser } from "@/state/userSlice";
 import { TextField } from "@mui/material";
 
 const Login = () => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const [loginUser, { isLoading, error }] = useLoginUserMutation();
 
   const [formData, setFormData] = useState({
@@ -22,17 +25,28 @@ const Login = () => {
     try {
       const response = await loginUser(formData).unwrap();
       localStorage.setItem("token", response.token!);
+      if (response.user.organizationId) {
+        localStorage.setItem("userOrg", response.user.organizationId!.toString());
+      }
+      const userResponse = await fetch("http://localhost:8000/auth/me", {
+        headers: { Authorization: `Bearer ${response.token}` },
+      }).then((res) => res.json());
+      if (!userResponse || !userResponse.email) {
+        throw new Error("Invalid user data received from API");
+      }
+      dispatch(setUser(userResponse));
       router.push("/dashboard");
     } catch (err) {
       console.error("Login failed", err);
     }
-  };
+  };  
 
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-lg w-96">
         <h2 className="text-2xl font-semibold mb-4 text-center">Login</h2>
         <div className="mb-8">
+          <label className="block mb-2">Email</label>
           <TextField
             type="email"
             name="email"
@@ -46,6 +60,7 @@ const Login = () => {
             required
           />
         </div>
+        <label className="block mb-2">Password</label>
         <TextField
           type="password"
           name="password"
