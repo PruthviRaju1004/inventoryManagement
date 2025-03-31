@@ -11,7 +11,9 @@ import {
     FileText,
     Warehouse,
     Package,
-    ClipboardList
+    ClipboardList,
+    UserPlus,
+    BadgeDollarSign
 } from "lucide-react";
 // import Image from "next/image";
 import Link from "next/link";
@@ -52,12 +54,12 @@ const SidebarLink = ({
 
 const Sidebar = () => {
     const dispatch = useDispatch();
-    const isSidebarCollapsed = useAppSelector((state) => state.global.isSidebarCollapsed);
+    const isSidebarCollapsed = useAppSelector((state: any) => state.global.isSidebarCollapsed);
     const toggleSidebar = () => {
         dispatch(setIsSidebarCollapsed(!isSidebarCollapsed));
     }
     const sidebarClassNames = `fixed flex flex-col ${isSidebarCollapsed ? "w-0 md:w-16" : "w-72 md:w-64"
-        } bg-white transition-all duration-300 overflow-hidden h-full shadow-md z-40`;
+        } bg-white transition-all duration-300 overflow-y-auto h-full shadow-md z-40`;
     return (
         <div className={sidebarClassNames}>
             <div className={`flex gap-3 justify-between md:justify-normal items-center pt-8
@@ -80,12 +82,14 @@ const Sidebar = () => {
                     label="Dashboard"
                     isCollapsed={isSidebarCollapsed}
                 />
-                <SidebarLink
-                    href="/organizations"
-                    icon={Building}
-                    label="Organizations"
-                    isCollapsed={isSidebarCollapsed}
-                />
+                {!localStorage.getItem("userOrg") && (
+                    <SidebarLink
+                        href="/organizations"
+                        icon={Building}
+                        label="Organizations"
+                        isCollapsed={isSidebarCollapsed}
+                    />
+                )}
                 <SidebarLink
                     href="/warehouses"
                     icon={Warehouse}
@@ -125,7 +129,19 @@ const Sidebar = () => {
                 <SidebarLink
                     href="/inventory"
                     icon={ClipboardList}
-                    label="Inventory Reports"
+                    label="Inventory Management"
+                    isCollapsed={isSidebarCollapsed}
+                />
+                <SidebarLink
+                    href="/salesOrder"
+                    icon={BadgeDollarSign}
+                    label="Sales Orders"
+                    isCollapsed={isSidebarCollapsed}
+                />
+                <SidebarLink
+                    href="/users"
+                    icon={UserPlus}
+                    label="Users"
                     isCollapsed={isSidebarCollapsed}
                 />
             </div>

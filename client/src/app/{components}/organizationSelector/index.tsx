@@ -19,6 +19,7 @@ const OrganizationSelector: React.FC<Props> = ({ selectedOrg, onChange }) => {
       onChange={(e) => onChange(Number(e.target.value))}
       displayEmpty
       fullWidth
+      sx={{ height: "41px" }}
     >
       <MenuItem value="" disabled>Select an Organization</MenuItem>
       {organizations?.map((org) => (
