@@ -115,7 +115,8 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
                 verificationToken
             },
         });
-        const registrationLink = `http://localhost:3000/register?token=${verificationToken}`;
+        const registrationLink = `https://inventory-management-woad-five.vercel.app/register?token=${verificationToken}`;
+        // const registrationLink = `http://localhost:3000/register?token=${verificationToken}`;
         await sendEmail(email, "Complete Your Registration", `Click the link to set your password: ${registrationLink}`);
         res.status(201).json({ message: "User created successfully", user: newUser });
     } catch (error) {
