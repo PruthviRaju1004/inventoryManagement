@@ -79,14 +79,14 @@ const WarehouseDetails = () => {
                 </Button>
             </div>
 
-            <DataGrid rows={(stockData || []).map((row: any) => ({
+            {/* <DataGrid rows={(stockData || []).map((row: any) => ({
                 ...row,
                 id: `${row.warehouseId}-${row.itemId}`, // Generate a unique ID
                 productName: row.item?.name || "Unknown",
                 unit: row.item?.baseUom || "N/A",
                 lastUpdated: row.updatedAt || "N/A",
             }))}
-                columns={columns} loading={isLoading} />
+                columns={columns} loading={isLoading} /> */}
 
             {/* Dialog for Adding/Editing Stock */}
             <Dialog open={open} onClose={handleClose}>
