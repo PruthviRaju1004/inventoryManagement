@@ -1,8 +1,9 @@
 import { useState, useMemo, useEffect } from "react";
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions,
+  Dialog, DialogTitle, DialogContent, DialogActions, Autocomplete, IconButton,
   TextField, MenuItem, Typography, List, ListItem, ListItemText
 } from "@mui/material";
+import { X } from "lucide-react";
 import { useGetSuppliersQuery, useCreatePurchaseOrderMutation, useGetSupplierItemsQuery, useUpdatePurchaseOrderMutation, PurchaseOrder } from "../../state/api";
 
 const validStatusTransitions: Record<string, string[]> = {
@@ -10,9 +11,7 @@ const validStatusTransitions: Record<string, string[]> = {
   APPROVED: ["APPROVED", "COMPLETED", "CANCELLED"],
   REJECTED: ["REJECTED"], // Cannot be changed
   COMPLETED: ["COMPLETED", "CLOSED"],
-  CANCELLED: ["CANCELLED"], // Cannot be changed
-  OPEN: ["OPEN", "APPROVED", "REJECTED", "CANCELLED"],
-  CLOSED: ["CLOSED"] // Final state
+  CANCELLED: ["CANCELLED"],
 };
 
 
@@ -24,25 +23,25 @@ const PurchaseOrderModal = ({ purchaseOrder, organizationId, onClose }: { purcha
   const [receivedDate, setReceivedDate] = useState("");
   const [status, setStatus] = useState(purchaseOrder?.status || "PENDING");
   const [remarks, setRemarks] = useState("");
-  const [selectedProducts, setSelectedProducts] = useState<{ itemId: number; itemName: string; quantity: number; unitPrice: number; uom: string }[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<{ itemId: number; itemName: string; supply_price: number; supply_quantity: number; quantity: number; }[]>([]);
 
-  const { data: suppliers = [] } = useGetSuppliersQuery(organizationId ?? 0);
+  const { data: suppliers = [] } = useGetSuppliersQuery({ organizationId: organizationId ?? 0 });
   const { data: supplierProducts = [] } = useGetSupplierItemsQuery(Number(supplierId), { skip: !supplierId });
   const [createPurchaseOrder] = useCreatePurchaseOrderMutation();
   const [updatePurchaseOrder] = useUpdatePurchaseOrderMutation();
 
   const totalAmount = useMemo(() => {
-    console.log("selectedProducts", selectedProducts);
-    return selectedProducts.reduce((sum, product) => sum + product.quantity * product.unitPrice, 0);
+    return selectedProducts.reduce((sum, product) => sum + product.quantity * product.supply_price, 0);
   }, [selectedProducts]);
   const formatDate = (date: string) => {
     const dateObj = new Date(date);
     const localDate = new Date(dateObj.getUTCFullYear(), dateObj.getUTCMonth(), dateObj.getUTCDate());
     return localDate.toISOString().split('T')[0];
   };
+
   useEffect(() => {
     if (purchaseOrder) {
-      console.log(purchaseOrder)
+      // console.log(purchaseOrder)
       setSupplierId(purchaseOrder.supplierId.toString());
       setOrderNumber(purchaseOrder.orderNumber);
       setOrderDate(purchaseOrder.orderDate ? formatDate(purchaseOrder.orderDate) : "");
@@ -52,10 +51,10 @@ const PurchaseOrderModal = ({ purchaseOrder, organizationId, onClose }: { purcha
       setRemarks(purchaseOrder.remarks || "");
       setSelectedProducts(purchaseOrder.purchaseOrderItems.map(item => ({
         itemId: item.itemId,
-        itemName: item.item.name,
-        quantity: item.quantity,
-        unitPrice: item.supplierUnitPrice,
-        uom: item.uom
+        itemName: item.itemName,
+        supply_price: Number(item.unitPrice) || 0,
+        supply_quantity: Number(item.supply_quantity) || 0, // Ensure supply_quantity is a number
+        quantity: Number(item.quantity) // Default quantity
       })) || []);
     }
   }, [purchaseOrder]);
@@ -84,16 +83,11 @@ const PurchaseOrderModal = ({ purchaseOrder, organizationId, onClose }: { purcha
           purchaseOrderItems: selectedProducts.map(product => ({
             id: product.itemId,
             itemId: product.itemId,
+            itemName: product.itemName,
+            supply_quantity: product.supply_quantity, // Add supply_quantity
             quantity: product.quantity,
-            // unitPrice: Number(product.unitPrice), // Convert before sending
-            totalPrice: product.quantity * Number(product.unitPrice),
-            uom: product.uom,
-            supplierUnitPrice: Number(product.unitPrice),
-            item: {
-              id: product.itemId,
-              name: product.itemName,
-              itemCode: "", // Add appropriate itemCode if available
-            },
+            totalPrice: product.supply_quantity * Number(product.supply_price),
+            unitPrice: Number(product.supply_price),
           })),
         }
       });
@@ -110,29 +104,33 @@ const PurchaseOrderModal = ({ purchaseOrder, organizationId, onClose }: { purcha
         purchaseOrderItems: selectedProducts.map(product => ({
           itemId: product.itemId,
           quantity: product.quantity,
-          unitPrice: Number(product.unitPrice),
-          uom: product.uom || "PCS", // default value
+          unitPrice: Number(product.supply_price),
           itemName: product.itemName || "Unknown Item", // default value
-          totalPrice: product.quantity * product.unitPrice, // calculated value
+          totalPrice: product.quantity * product.supply_price, // calculated value
         })),
       });
     }
     onClose();
   };
 
-  const handleQuantityChange = (productId: number, productName: string, quantity: number, unitPrice: number, uom: string) => {
-    setSelectedProducts((prev) => {
-      if (quantity > 0) {
-        const existingProduct = prev.find((p) => p.itemId === productId);
-        if (existingProduct) {
-          return prev.map((p) => (p.itemId === productId ? { ...p, quantity } : p));
-        } else {
-          return [...prev, { itemId: productId, itemName: productName, quantity, unitPrice, uom }];
-        }
-      } else {
-        return prev.filter((p) => p.itemId !== productId);
+  const handleProductSelect = (event: any, newValue: any) => {
+    if (newValue) {
+      const exists = selectedProducts.find((p) => p.itemId === newValue.itemId);
+      // console.log("selectedProducts", selectedProducts);
+      if (!exists) {
+        setSelectedProducts([...selectedProducts, { ...newValue, quantity: 1 }]);
       }
-    });
+    }
+  };
+
+  const handleRemoveProduct = (productId: number) => {
+    setSelectedProducts((prev) => prev.filter((p) => p.itemId !== productId));
+  };
+
+  const handleQuantityChange = (productId: number, quantity: number) => {
+    setSelectedProducts((prev) =>
+      prev.map((p) => (p.itemId === productId ? { ...p, quantity } : p))
+    );
   };
 
   return (
@@ -198,40 +196,57 @@ const PurchaseOrderModal = ({ purchaseOrder, organizationId, onClose }: { purcha
           </TextField>}
         {supplierId && (
           <>
-            <Typography variant="h6" sx={{ mt: 2 }}>Products from Supplier</Typography>
-            <List>
-              {supplierProducts.length > 0 ? (
-                supplierProducts.map((product) => {
-                  if (!product.itemId) return null; // Fix: itemId is in the response, not product.item.id
-                  const selectedProduct = selectedProducts.find((p) => p.itemId === product.itemId);
-                  // console.log(product);
-                  return (
-                    <ListItem key={product.itemId} sx={{ cursor: "pointer", backgroundColor: selectedProduct ? 'rgba(0, 0, 0, 0.08)' : 'inherit' }}>
-                      <ListItemText primary={product.itemName} secondary={`Price: ${product.supply_price}`} />
+            <Typography variant="h6" sx={{ mt: 2 }}>Search and Select Products</Typography>
+            <Autocomplete
+              options={supplierProducts}
+              getOptionLabel={(option) => option.itemName}
+              renderInput={(params) => <TextField {...params} label="Search Products" />}
+              onChange={handleProductSelect}
+              disablePortal
+            />
+            {selectedProducts.length > 0 && (
+              <>
+                <Typography variant="h6" sx={{ mt: 2 }}>Selected Products</Typography>
+                <List>
+                  {selectedProducts.map((product) => (
+                    <ListItem key={product.itemId} secondaryAction={
+                      <IconButton edge="end" onClick={() => handleRemoveProduct(product.itemId)}>
+                        <X size={20} />
+                      </IconButton>
+                    }>
+                      <ListItemText primary={product.itemName} secondary={
+                        <>
+                          Price: {product.supply_price}
+                        </>
+                      } />
                       <TextField
                         type="number"
-                        label="Quantity"
-                        value={selectedProduct?.quantity || ""}
-                        onChange={(e) => {
-                          const quantity = Math.max(0, Number(e.target.value));
-                          handleQuantityChange(product.itemId, product.itemName, quantity, Number(product.supply_price), "PCS");
-                        }}
+                        inputMode="numeric" 
+                        onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                        value={product.quantity}
+                        onChange={(e) => handleQuantityChange(product.itemId, Math.max(1, Number(e.target.value)))}
                         size="small"
-                        sx={{ width: 80 }}
+                        sx={{ width: 80, ml: 2 }}
                       />
                     </ListItem>
-                  );
-                })
-              ) : (
-                <Typography variant="body2" color="textSecondary">No products found.</Typography>
-              )}
-
-            </List>
+                  ))}
+                </List>
+              </>
+            )}
           </>
         )}
         <Typography variant="h6" sx={{ mt: 2, mb: 2 }}>
           Total Amount: {Number(totalAmount).toFixed(2)}
         </Typography>
+        <TextField
+          label="Remarks"
+          value={remarks ? remarks : ""}
+          onChange={(e) => setRemarks(e.target.value)}
+          fullWidth
+          margin="normal"
+          multiline
+          rows={3}
+        />
       </DialogContent>
       <DialogActions>
         <button type="button" onClick={onClose} className="mt-4 btn-cancel">Cancel</button>
