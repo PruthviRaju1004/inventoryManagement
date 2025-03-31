@@ -11,6 +11,8 @@ import useOrganizations from "../{hooks}/useOrganizations";
 import useDeleteDialog from "../{hooks}/useDeleteDialog";
 import { useRouter } from "next/navigation";
 import { Chip, Box } from "@mui/material";
+import { useAppSelector } from "../redux";
+import StatusFilter from "../{components}/statusFilter/statusFilter";
 
 // Lazy load Purchase Order Modal
 const GrnModal = dynamic(() => import("./grnModal"), { ssr: false });
@@ -22,13 +24,18 @@ const statusColors: Record<string, { bg: string; text: string }> = {
     Closed: { bg: "#607D8B", text: "#FFFFFF" } // Dark Gray
 };
 
+const statusOptions = ["All", "Draft", "Approved", "Cancelled", "Closed"];
+
 const Grns = () => {
     const router = useRouter();
     const { selectedOrg, setSelectedOrg } = useOrganizations();
-    const { data: grns, isLoading } = useGetGRNsQuery(selectedOrg ?? 0, { skip: !selectedOrg });
+    const [statusFilter, setStatusFilter] = useState("All");
+    const { data: grns, isLoading } = useGetGRNsQuery({ organizationId: selectedOrg ?? 0, status: statusFilter !== "All" ? statusFilter : undefined }, { skip: !selectedOrg });
     const [deleteGrn] = useDeleteGRNMutation();
     const [open, setOpen] = useState(false);
     const [editingGrn, setEditingGrn] = useState<GRN | null>(null);
+    const user = useAppSelector((state) => state.user);
+    const userRole = user?.roleId || 4;
 
     const handleOpen = useCallback((grn: GRN | null = null) => {
         setEditingGrn(grn);
@@ -48,7 +55,7 @@ const Grns = () => {
             }
             await deleteGrn(Number(grnId));
         }
-    );    
+    );
 
     const columns = useMemo(() => [
         {
@@ -124,40 +131,58 @@ const Grns = () => {
             width: 200,
             renderCell: (params: GridRenderCellParams) => params.row.remarks || "N/A"
         },
-        {
-            field: "actions",
-            headerName: "Actions",
-            sortable: false,
-            flex: 1,
-            minWidth: 150,
-            renderCell: (params: GridRenderCellParams) => (
-                <>
-                    {params.row.status !== "Approved" && 
-                        <div className="flex gap-2">
-                            <button onClick={() => handleOpen(params.row)} className="p-2 text-primary_btn_color rounded">
-                                <Pencil size={16} />
-                            </button>
-                            <button onClick={() => handleDeleteClick(params.row.grnId)} className="p-2 text-primary_btn_color rounded">
-                                <Trash2 size={16} />
-                            </button>
-                        </div>
-                    }
-                </>
-            ),
-        },
-    ], [handleOpen, handleDeleteClick, router]);    
+        ...(userRole !== 4
+            ? [
+                {
+                    field: "actions",
+                    headerName: "Actions",
+                    sortable: false,
+                    flex: 1,
+                    minWidth: 150,
+                    renderCell: (params: GridRenderCellParams) => (
+                        <>
+                            <div className="flex gap-2">
+                                {userRole !== 4 && (
+                                    <button onClick={() => handleOpen(params.row)} className="p-2 text-primary_btn_color rounded">
+                                        <Pencil size={16} />
+                                    </button>)}
+                                {params.row.status !== "Approved" && userRole!==3 && userRole !== 4 && (
+                                    <button onClick={() => handleDeleteClick(params.row.grnId)} className="p-2 text-primary_btn_color rounded">
+                                        <Trash2 size={16} />
+                                    </button>)
+                                }
+                            </div>
+                        </>
+                    ),
+                },
+            ]
+            : [])
+    ], [handleOpen, handleDeleteClick, router]);
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="flex justify-between gap-4">
-                <div>
-                    <OrganizationSelector selectedOrg={selectedOrg} onChange={setSelectedOrg} />
+        <h1 className="text-2xl font-semibold">Good Received Note</h1>
+            <div className="flex justify-between gap-4 align-center">
+                <div className="flex gap-4">
+                    {!localStorage.getItem("userOrg") &&
+                        <div>
+                            <OrganizationSelector selectedOrg={selectedOrg} onChange={setSelectedOrg} />
+                        </div>}
+                    <div>
+                        <StatusFilter
+                            statusFilter={statusFilter}
+                            setStatusFilter={setStatusFilter}
+                            statusOptions={statusOptions}
+                        /> 
+                    </div>
                 </div>
-                <button onClick={() => handleOpen()} className="mt-4 bg-primary_btn_color text-[#fff] font-medium 
+                {userRole !== 4 &&
+                    <button onClick={() => handleOpen()} className="bg-primary_btn_color text-[#fff] font-medium 
                     font-sans text-base text-center px-4 h-12 rounded-sm">Create GRN</button>
+                }
             </div>
             <DataTable
-                rows={(grns || []).map((grn) => ({ ...grn, id: Math.random().toString(36).substr(2, 9) }))} 
+                rows={(grns || []).map((grn) => ({ ...grn, id: Math.random().toString(36).substr(2, 9) }))}
                 columns={columns}
                 loading={isLoading}
                 onEdit={handleOpen}

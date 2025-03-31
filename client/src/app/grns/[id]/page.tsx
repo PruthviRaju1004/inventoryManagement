@@ -1,15 +1,18 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import { useGetGRNByIdQuery } from "../../../state/api"; // API Hook for fetching GRN details
-import { Box, Typography } from "@mui/material";
+import { useGetGRNByIdQuery, useSendEmailMutation } from "../../../state/api"; // API Hook for fetching GRN details
+import { Box, Typography, TextField, Backdrop, CircularProgress } from "@mui/material";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
 const GRNDetail = () => {
     const { id } = useParams();
-    const { data: grn, isLoading } = useGetGRNByIdQuery(Number(id)); 
+    const { data: grn, isLoading } = useGetGRNByIdQuery(Number(id));
+    const [sendEmail] = useSendEmailMutation();
+    const [email, setEmail] = useState("");
+    const [isSendingEmail, setIsSendingEmail] = useState(false);
     const pdfRef = useRef<HTMLDivElement>(null);
 
     if (isLoading) return <Typography>Loading...</Typography>;
@@ -19,6 +22,7 @@ const GRNDetail = () => {
 
     const generatePDF = () => {
         if (!pdfRef.current) return;
+        setIsSendingEmail(true);
 
         html2canvas(pdfRef.current, { scale: 2 }).then((canvas) => {
             const imgData = canvas.toDataURL("image/png");
@@ -29,6 +33,39 @@ const GRNDetail = () => {
 
             pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
             pdf.save(`GRN_${grn.grnNumber}.pdf`);
+        });
+    };
+
+    const handleSendEmail = async () => {
+        if (!pdfRef.current) return;
+
+        html2canvas(pdfRef.current, { scale: 2 }).then(async (canvas) => {
+            const imgData = canvas.toDataURL("image/png");
+            const pdf = new jsPDF("p", "mm", "a4");
+            const imgWidth = 210;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+
+            // Convert PDF to Base64
+            const pdfBase64 = pdf.output("datauristring").split(",")[1]; // Remove prefix
+
+            // Send to Backend
+            try {
+                const response = await sendEmail({
+                    email,
+                    subject: `PurchaseOrder #${grn.grnNumber}`,
+                    text: `Dear User,\n\nPlease find your GRN attached for Order #${grn.grnNumber}.\n\nBest regards,\nYour Company Name`,
+                    pdfBase64,
+                    fileName: `Purchase_Order_${grn.grnNumber}.pdf`,
+                }).unwrap();
+                alert(response.message);
+            } catch (error) {
+                console.error("Error sending email:", error);
+                alert("Failed to send email.");
+            } finally {
+                setIsSendingEmail(false); // Hide spinner
+                setEmail("");
+            }
         });
     };
 
@@ -50,14 +87,14 @@ const GRNDetail = () => {
                 {/* Supplier & Warehouse Details */}
                 <Box sx={{ mt: 2 }}>
                     <Typography fontWeight="bold">Supplier</Typography>
-                    <Typography color="primary"><strong>Supplier Id:</strong>{grn.supplierId}</Typography>
-                    <Typography><strong>Supplier Name:</strong>{grn.supplierName}</Typography>
+                    <Typography><strong>Supplier Name:</strong>{grn.supplier.name}</Typography>
+                    <Typography><strong>Supplier Email:</strong>{grn.supplier.contactEmail}</Typography>
                 </Box>
 
                 <Box sx={{ mt: 2 }}>
                     <Typography fontWeight="bold">Warehouse</Typography>
-                    <Typography color="primary"><strong>Warehouse Id:</strong>{grn.warehouseId}</Typography>
-                    <Typography><strong>Warehouse Name:</strong>{grn.warehouseName}</Typography>
+                    <Typography><strong>Warehouse Name:</strong>{grn.warehouse.name}</Typography>
+                    <Typography><strong>Warehouse Address:</strong>{grn.warehouse.address}</Typography>
                 </Box>
 
                 {/* GRN Details */}
@@ -94,11 +131,36 @@ const GRNDetail = () => {
                     <Typography><strong>Total Amount:</strong> ${grn.totalAmount}</Typography>
                 </Box>
             </Box>
+            <Box sx={{ mt: 4, p: 2, border: 1, borderColor: "grey", borderRadius: 2 }}>
+                <Typography variant="subtitle1" gutterBottom>
+                    Send GRN To:
+                </Typography>
+                <TextField
+                    fullWidth
+                    label="Recipient Email"
+                    variant="outlined"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                />
+            </Box>
+
 
             {/* Download PDF Button */}
-            <button className="mt-4 bg-primary_btn_color text-[#fff] font-medium font-sans text-base text-center px-4 h-12 rounded-sm float-right" onClick={generatePDF}>
-                Download PDF
-            </button>
+            <div className="mt-4 flex justify-between gap-4">
+                <button className="mt-4 bg-primary_btn_color text-[#fff] font-medium 
+                        font-sans text-base text-center px-4 h-12 rounded-sm float-right" onClick={generatePDF}>
+                    Download PDF
+                </button>
+                <button
+                    className="mt-4 bg-primary_btn_color text-[#fff] font-medium 
+                        font-sans text-base text-center px-4 h-12 rounded-sm float-right"
+                    onClick={handleSendEmail}>
+                    Send Email
+                </button>
+            </div>
+            <Backdrop sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }} open={isSendingEmail}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
         </Box>
     );
 };

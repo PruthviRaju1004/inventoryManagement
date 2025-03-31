@@ -40,6 +40,7 @@ const GRNModal = ({ grn, organizationId, onClose }: { grn: GRN | null; organizat
     const [status, setStatus] = useState(grn?.status || "Draft");
     const [remarks, setRemarks] = useState("");
     const [grnNumber, setGrnNumber] = useState("");
+    const [totalAmountOfProducts, setTotalAmountOfProducts] = useState(0);
     const [selectedProducts, setSelectedProducts] = useState<{
         id?: number;
         itemId: number;
@@ -56,7 +57,7 @@ const GRNModal = ({ grn, organizationId, onClose }: { grn: GRN | null; organizat
         remarks?: string | null;
     }[]>([]);
 
-    const { data: suppliers = [] } = useGetSuppliersQuery(organizationId ?? 0);
+    const { data: suppliers = [] } = useGetSuppliersQuery({ organizationId: organizationId ?? 0 });
     const { data: supplierPurchaseOrders } = useGetSupplierPurchaseOrdersQuery(
         Number(supplierId),
         { skip: !supplierId }
@@ -64,12 +65,13 @@ const GRNModal = ({ grn, organizationId, onClose }: { grn: GRN | null; organizat
     const { data: purchaseOrderDetails, isError } = useGetPurchaseOrderByIdQuery(Number(poId), {
         skip: !poId,
     });
-    const { data: warehouses = [] } = useGetWarehousesQuery(organizationId ?? 0); // Fetch warehouses
+    const { data: warehouses = [] } = useGetWarehousesQuery({ organizationId: organizationId ?? 0 }); // Fetch warehouses
     const [createGRN] = useCreateGRNMutation();
     const [updateGRN] = useUpdateGRNMutation();
 
     const totalAmount = useMemo(() => {
-        return selectedProducts.reduce((sum, product) => sum + product.receivedQty * product.unitPrice, 0);
+        // console.log("Selected Products", selectedProducts);
+        return selectedProducts.reduce((sum, product) => sum + product.receivedQty * (product.unitPrice), 0);
     }, [selectedProducts]);
 
     const formatDate = (date: string) => {
@@ -80,7 +82,9 @@ const GRNModal = ({ grn, organizationId, onClose }: { grn: GRN | null; organizat
 
     useEffect(() => {
         if (grn && suppliers.length > 0 && warehouses.length > 0) {
-            console.log("GRN");
+            console.log("GRN", grn);
+            setTotalAmountOfProducts(grn.totalAmount);
+            // console.log("GRN");
             setGrnNumber(grn.grnNumber);
             setSupplierId(grn.supplierId.toString());
             setPoId(grn.poId.toString());
@@ -113,17 +117,18 @@ const GRNModal = ({ grn, organizationId, onClose }: { grn: GRN | null; organizat
     // Set selectedProducts to purchaseOrderItems when a purchase order is selected
     useEffect(() => {
         if (!grn && purchaseOrderDetails?.purchaseOrderItems) {
-            console.log("Purchase Order Details");
+            setTotalAmountOfProducts(purchaseOrderDetails.totalAmount);
+            // console.log("Purchase Order Details");
             setSelectedProducts(
                 purchaseOrderDetails.purchaseOrderItems.map((item: any) => ({
                     id: item.grnLineItemId ?? undefined,
-                    itemId: item.id,
-                    itemName: item.item.name,
+                    itemId: item.itemId,
+                    itemName: item.itemName,
                     orderedQty: item.quantity,
                     receivedQty: item.quantity,
                     unitPrice: item.unitPrice,
                     uom: item.baseUom,
-                    lineTotal: item.quantity * item.unitPrice,
+                    lineTotal: item.receivedQty * item.unitPrice,
                     batchNumber: null,
                     manufacturingDate: null,
                     expiryDate: null,
@@ -161,7 +166,7 @@ const GRNModal = ({ grn, organizationId, onClose }: { grn: GRN | null; organizat
             grnLineItems: selectedProducts.map(product => {
                 return {
                     id: product.id ?? 0,
-                    grnId: grn?.id || 0,
+                    grnId: grn?.grnId ?? 0,
                     itemId: product.itemId,
                     itemName: product.itemName,
                     orderedQty: product.orderedQty,
@@ -177,7 +182,7 @@ const GRNModal = ({ grn, organizationId, onClose }: { grn: GRN | null; organizat
                 };
             })
         };
-        console.log("payload", grn);
+        // console.log("payload", payload);
         grn ? await updateGRN({ id: grn.grnId, data: payload }) : await createGRN(payload);
         onClose();
     };
@@ -295,12 +300,14 @@ const GRNModal = ({ grn, organizationId, onClose }: { grn: GRN | null; organizat
                                 <ListItem key={product.itemId}>
                                     <ListItemText
                                         primary={product.itemName}
-                                        secondary={`Unit Price: ${product.unitPrice}`}
+                                        secondary={`Unit Price: ${ product.unitPrice }`}
                                     />
                                     <Box>
                                         <Typography variant="body2">Ordered: {product.orderedQty}</Typography>
                                         <TextField
                                             type="number"
+                                            inputMode="numeric"
+                                            onWheel={(e) => (e.target as HTMLInputElement).blur()}
                                             label="Received"
                                             value={product.receivedQty}
                                             onChange={(e) => handleReceivedQuantityChange(product.itemId, Math.max(0, Number(e.target.value)))}
@@ -355,9 +362,15 @@ const GRNModal = ({ grn, organizationId, onClose }: { grn: GRN | null; organizat
                 <button className="mt-4 btn-cancel" onClick={onClose}>
                     Cancel
                 </button>
-                <button className="mt-4 btn-primary" onClick={handleSubmit}>
-                    Create
-                </button>
+                {grn ?
+                    <button className="mt-4 btn-primary" onClick={handleSubmit}>
+                        Update
+                    </button>
+                    :
+                    <button className="mt-4 btn-primary" onClick={handleSubmit}>
+                        Create
+                    </button>
+                }
             </DialogActions>
         </Dialog>
     );
