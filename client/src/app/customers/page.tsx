@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   Button,
   Dialog,
@@ -23,19 +23,39 @@ import dynamic from "next/dynamic";
 import OrganizationSelector from "../{components}/organizationSelector/index";
 import useOrganizations from "../{hooks}/useOrganizations";
 import useDeleteDialog from "../{hooks}/useDeleteDialog";
+import { useAppSelector } from "../redux";
 import React from "react";
+import debounce from "lodash.debounce";
+import SearchBar from "../{components}/searchBar";
 
 const CustomerModal = dynamic(() => import("./customersModal"), { ssr: false });
 
 const Customers = () => {
   const { selectedOrg, setSelectedOrg } = useOrganizations();
-  const { data: customers } = useGetCustomersQuery(selectedOrg ?? 0, {
-    skip: !selectedOrg,
-  });
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const { data: customers } = useGetCustomersQuery(
+    { organizationId: selectedOrg ?? 0, search: debouncedSearch },
+    { skip: !selectedOrg }
+  );
   const [deleteCustomer] = useDeleteCustomerMutation();
   const [open, setOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
-  // const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
+  const user = useAppSelector((state) => state.user);
+  const userRole = user?.roleId || 4;
+
+  const filterCustomers = useMemo(() => {
+    return customers?.filter((cutomer) =>
+      cutomer.name.toLowerCase().includes(search.toLowerCase()) ||
+      cutomer.customerCode.toLowerCase().includes(search.toLowerCase())
+    ) || [];
+  }, [customers, search]);
+
+  const debouncedSetSearch = useMemo(() => debounce(setDebouncedSearch, 500), []);
+
+  useEffect(() => {
+    debouncedSetSearch(search);
+  }, [search, debouncedSetSearch]);
 
   const handleOpen = (customer: Customer | null = null) => {
     setEditingCustomer(customer);
@@ -51,45 +71,44 @@ const Customers = () => {
     useDeleteDialog(async (id) => await deleteCustomer(Number(id)));
 
   const columns: ColumnDef<Customer>[] = [
-    // {
-    //   id: "expand",
-    //   header: () => null,
-    //   cell: ({ row }) => (
-    //     <button onClick={() => toggleExpandRow(row.original.id)} className="p-2 text-gray-500">
-    //       {expandedRows[row.original.id] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-    //     </button>
-    //   ),
-    // },
     { accessorKey: "name", header: "Name" },
     { accessorKey: "customerCode", header: "Customer Code" },
     { accessorKey: "contactEmail", header: "Email" },
     { accessorKey: "contactPhone", header: "Phone" },
     { accessorKey: "paymentTerms", header: "Payment Terms" },
     { accessorKey: "taxId", header: "Tax ID" },
-    {
-      id: "actions",
-      header: "Actions",
-      cell: ({ row }) => (
-        <div className="flex gap-2">
-          <button
-            onClick={() => handleOpen(row.original)}
-            className="p-2 text-primary_btn_color rounded"
-          >
-            <Pencil size={16} />
-          </button>
-          <button
-            onClick={() => handleDeleteClick(String(row.original.id))}
-            className="p-2 text-primary_btn_color rounded"
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
-      ),
-    },
+    ...(userRole !== 4
+      ? [
+        {
+          id: "actions",
+          header: "Actions",
+          cell: ({ row }: { row: { original: Customer } }) => (
+            <div className="flex gap-2">
+              {userRole !== 4 && (
+                <button
+                  onClick={() => handleOpen(row.original)}
+                  className="p-2 text-primary_btn_color rounded"
+                >
+                  <Pencil size={16} />
+                </button>
+              )}
+              {userRole !== 4 && userRole !== 3 && (
+                <button
+                  onClick={() => handleDeleteClick(String(row.original.id))}
+                  className="p-2 text-primary_btn_color rounded"
+                >
+                  <Trash2 size={16} />
+                </button>
+              )}
+            </div>
+          ),
+        },
+      ]
+      : [])
   ];
 
   const table = useReactTable({
-    data: customers || [],
+    data: filterCustomers,
     columns,
     // state: { expanded: expandedRows },
     getCoreRowModel: getCoreRowModel(),
@@ -98,15 +117,24 @@ const Customers = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-between gap-4">
-        <div>
-            <OrganizationSelector selectedOrg={selectedOrg} onChange={setSelectedOrg} />
+      <h1 className="text-2xl font-semibold">Customers</h1>
+      <div className="flex justify-between gap-4 align-center">
+        <div className="flex gap-4">
+          {!localStorage.getItem("userOrg") &&
+            <div>
+              <OrganizationSelector selectedOrg={selectedOrg} onChange={setSelectedOrg} />
+            </div>}
+          <div>
+            <SearchBar onSearch={setSearch} placeholder="Search Customers by Customer Name and Code" />
+          </div>
         </div>
-        <button
-          onClick={() => handleOpen()}
-          className="mt-4 bg-primary_btn_color text-white font-medium text-base px-4 h-12 rounded-sm">
-          Create Customer
-        </button>
+        {userRole !== 4 &&
+          <button
+            onClick={() => handleOpen()}
+            className="mt-4 bg-primary_btn_color text-white font-medium text-base px-4 h-12 rounded-sm">
+            Create Customer
+          </button>
+        }
       </div>
 
       {/* Table */}

@@ -5,7 +5,6 @@ import { isAuthenticated } from "@/app/utils/auth";
 
 export default function Home() {
   const router = useRouter();
-  console.log(isAuthenticated())
   useEffect(() => {
     if (isAuthenticated()) {
       router.push("/dashboard"); // Redirect to dashboard if logged in
