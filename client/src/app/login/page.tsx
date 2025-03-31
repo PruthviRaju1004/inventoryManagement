@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useLoginUserMutation } from "@/state/api";
+import { useLoginUserMutation, useGetCurrentUserQuery } from "@/state/api";
 import { useAppDispatch } from "../redux";
 import { setUser } from "@/state/userSlice";
 import { TextField } from "@mui/material";
@@ -16,6 +16,17 @@ const Login = () => {
     password: "",
   });
 
+  const { data: currentUser, isSuccess } = useGetCurrentUserQuery(undefined, {
+    skip: typeof window === "undefined" || !localStorage.getItem("token"),
+  });
+
+  useEffect(() => {
+    if (isSuccess && currentUser) {
+      dispatch(setUser(currentUser));
+      router.push("/dashboard");
+    }
+  }, [isSuccess, currentUser, dispatch, router]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -24,22 +35,18 @@ const Login = () => {
     e.preventDefault();
     try {
       const response = await loginUser(formData).unwrap();
-      localStorage.setItem("token", response.token!);
+      if (response.token) {
+        localStorage.setItem("token", response.token);
+      } else {
+        console.error("Token is undefined");
+      }
       if (response.user.organizationId) {
-        localStorage.setItem("userOrg", response.user.organizationId!.toString());
+        localStorage.setItem("userOrg", response.user.organizationId.toString());
       }
-      const userResponse = await fetch("https://inventory-management-dsbo.vercel.app/auth/me", {
-        headers: { Authorization: `Bearer ${response.token}` },
-      }).then((res) => res.json());
-      if (!userResponse || !userResponse.email) {
-        throw new Error("Invalid user data received from API");
-      }
-      dispatch(setUser(userResponse));
-      router.push("/dashboard");
     } catch (err) {
       console.error("Login failed", err);
     }
-  };  
+  };
 
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
