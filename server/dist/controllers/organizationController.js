@@ -22,11 +22,6 @@ const createOrganization = (req, res) => __awaiter(void 0, void 0, void 0, funct
     try {
         const { name, contactEmail, contactPhone, address, taxId, dunsNumber, website, socialMedia } = req.body;
         const userId = req.user.id;
-        // Validate website domain matches email domain
-        if (website && !(0, validateDomain_1.validateDomain)(contactEmail, website)) {
-            res.status(400).json({ message: "Website domain must match email domain" });
-            return;
-        }
         // Get uploaded file paths
         const legalProofs = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
         const existingOrg = yield prisma.organization.findUnique({ where: { contactEmail } });

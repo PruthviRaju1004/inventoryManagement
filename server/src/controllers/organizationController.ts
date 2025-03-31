@@ -14,11 +14,6 @@ export const createOrganization = async (req: Request, res: Response): Promise<v
     try {
         const { name, contactEmail, contactPhone, address, taxId, dunsNumber, website, socialMedia } = req.body;
         const userId = (req as any).user.id;
-        // Validate website domain matches email domain
-        if (website && !validateDomain(contactEmail, website)) {
-            res.status(400).json({ message: "Website domain must match email domain" });
-            return;
-        }
         // Get uploaded file paths
         const legalProofs = req.files ? (req.files as Express.Multer.File[]).map(file => `/uploads/${file.filename}`) : [];
         const existingOrg = await prisma.organization.findUnique({ where: { contactEmail } });
