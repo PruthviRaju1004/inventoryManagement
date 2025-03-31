@@ -1,7 +1,7 @@
 "use client";
 import { useState, useCallback, useMemo } from "react";
 import { GridRenderCellParams } from "@mui/x-data-grid";
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
 import { Pencil, Trash2 } from "lucide-react";
 import { useGetPurchaseOrdersQuery, useDeletePurchaseOrderMutation, PurchaseOrder } from "../../state/api";
 import dynamic from "next/dynamic";
@@ -11,6 +11,8 @@ import useOrganizations from "../{hooks}/useOrganizations";
 import useDeleteDialog from "../{hooks}/useDeleteDialog";
 import { useRouter } from "next/navigation";
 import { Chip, Box } from "@mui/material";
+import { useAppSelector } from "../redux";
+import StatusFilter from "../{components}/statusFilter/statusFilter";
 
 // Lazy load Purchase Order Modal
 const PurchaseOrderModal = dynamic(() => import("./purchaseOrdersModal"), { ssr: false });
@@ -21,20 +23,25 @@ const statusColors: Record<string, { bg: string; text: string }> = {
     REJECTED: { bg: "#F44336", text: "#FFFFFF" }, // Red
     COMPLETED: { bg: "#2196F3", text: "#FFFFFF" }, // Blue
     CANCELED: { bg: "#9E9E9E", text: "#FFFFFF" }, // Gray
-    OPEN: { bg: "#673AB7", text: "#FFFFFF" }, // Purple
-    CLOSED: { bg: "#607D8B", text: "#FFFFFF" } // Dark Gray
 };
+
+const statusOptions = ["ALL", "PENDING", "APPROVED", "REJECTED", "COMPLETED", "CANCELED"];
 
 const PurchaseOrders = () => {
     const router = useRouter();
+    const [statusFilter, setStatusFilter] = useState("ALL");
     const { selectedOrg, setSelectedOrg } = useOrganizations();
-    const { data: purchaseOrders, isLoading } = useGetPurchaseOrdersQuery(selectedOrg ?? 0, { skip: !selectedOrg });
+    const { data: purchaseOrders, isLoading } = useGetPurchaseOrdersQuery(
+        { organizationId: selectedOrg ?? 0, status: statusFilter !== "ALL" ? statusFilter : undefined },
+        { skip: !selectedOrg }
+    );
     const [deletePurchaseOrder] = useDeletePurchaseOrderMutation();
     const [open, setOpen] = useState(false);
     const [editingPurchaeOrder, setEditingPurchaeOrder] = useState<PurchaseOrder | null>(null);
+    const user = useAppSelector((state) => state.user);
+    const userRole = user?.roleId || 4;
 
     const handleOpen = (purchaseOrder: PurchaseOrder | null = null) => {
-        console.log("purchaseOrder", purchaseOrder);
         setEditingPurchaeOrder(purchaseOrder);
         setOpen(true);
     };
@@ -111,35 +118,53 @@ const PurchaseOrders = () => {
                 return date;
             }
         },
-        // { field: "receivedDate", headerName: "Received Date", width: 150 },
-        // { field: "remarks", headerName: "Remarks", width: 200 },
-        {
-            field: "actions",
-            headerName: "Actions",
-            sortable: false,
-            flex: 1,
-            minWidth: 150,
-            renderCell: (params: GridRenderCellParams) => (
-                <div className="flex gap-2">
-                    <button onClick={() => handleOpen(params.row)} className="p-2 text-primary_btn_color rounded">
-                        <Pencil size={16} />
-                    </button>
-                    <button onClick={() => handleDeleteClick(params.row.id)} className="p-2 text-primary_btn_color rounded">
-                        <Trash2 size={16} />
-                    </button>
-                </div>
-            ),
-        },
+        ...(userRole !== 4
+            ? [
+                {
+                    field: "actions",
+                    headerName: "Actions",
+                    sortable: false,
+                    flex: 1,
+                    minWidth: 150,
+                    renderCell: (params: GridRenderCellParams) => (
+                        <div className="flex gap-2">
+                            {userRole !== 4 && (
+                                <button onClick={() => handleOpen(params.row)} className="p-2 text-primary_btn_color rounded">
+                                    <Pencil size={16} />
+                                </button>)}
+                            {userRole !== 4 && userRole !== 3 && (
+                                <button onClick={() => handleDeleteClick(params.row.id)} className="p-2 text-primary_btn_color rounded">
+                                    <Trash2 size={16} />
+                                </button>
+                            )}
+                        </div>
+                    ),
+                },
+            ]
+            : [])
     ], [handleOpen, handleDeleteClick, router]);
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="flex justify-between gap-4">
-                <div>
-                    <OrganizationSelector selectedOrg={selectedOrg} onChange={setSelectedOrg} />
+        <h1 className="text-2xl font-semibold">Purchase Orders</h1>
+            <div className="flex justify-between gap-4 align-center">
+                <div className="flex gap-4">
+                    {!localStorage.getItem("userOrg") &&
+                        <div>
+                            <OrganizationSelector selectedOrg={selectedOrg} onChange={setSelectedOrg} />
+                        </div>}
+                    <div>
+                        <StatusFilter
+                            statusFilter={statusFilter}
+                            setStatusFilter={setStatusFilter}
+                            statusOptions={statusOptions}
+                        />
+                    </div>
                 </div>
-                <button onClick={() => handleOpen()} className="mt-4 bg-primary_btn_color text-[#fff] font-medium 
+                {userRole !== 4 &&
+                    <button onClick={() => handleOpen()} className="bg-primary_btn_color text-[#fff] font-medium 
                     font-sans text-base text-center px-4 h-12 rounded-sm">Create Purchase Order</button>
+                }
             </div>
             <DataTable rows={purchaseOrders || []} columns={columns} loading={isLoading} onEdit={handleOpen} onDelete={handleDeleteClick} />
 
