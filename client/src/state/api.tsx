@@ -3,11 +3,59 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export interface AuthResponse {
   message: string;
   token?: string;
+  user: {
+    organizationId: number;
+  };
 }
 
 export interface LoginUser {
   email: string;
   password: string;
+}
+
+export interface User {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  roleId: number;
+  password: string;
+  phoneNumber: string;
+  username: string;
+  organizationId: number;
+}
+
+export interface CreateUserRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  roleId: number;
+  phoneNumber: string;
+  username: string;
+  organizationId: number;
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  password: string;
+}
+
+export interface VerifyRegistrationRequest {
+  token: string;
+}
+
+export interface UpdateUserRoleRequest {
+  userId: number;
+  roleId: number;
+}
+
+export interface DeleteUserRequest {
+  userId: number;
 }
 
 export interface Organization {
@@ -258,19 +306,14 @@ export interface PurchaseOrder {
     contactName: string;
   };
   purchaseOrderItems: {
+    itemName: string;
+    supply_quantity: number;
     id: number;
     quantity: number;
-    // unitPrice: number;
+    unitPrice: number;
     totalPrice: number;
-    uom: string;
     itemId: number;
-    supplierUnitPrice: number;
-    item: {
-      id: number;
-      name: string;
-      itemCode: string;
-      // totalAmount: number;
-    };
+    // supplierUnitPrice: number;
   }[];
 }
 
@@ -308,6 +351,19 @@ export interface GRN {
   remarks?: string;
   createdBy: number;
   updatedBy: number;
+  supplier: {
+    id: number;
+    name: string;
+    contactEmail: string;
+    contactName: string;
+  };
+  warehouse: {
+    id: number;
+    name: string;
+    address: string;
+    contactEmail: string;
+    contactPhone: string;
+  };
   grnLineItems: {
     id: number;
     grnId: number;
@@ -383,6 +439,7 @@ export interface CreateSupplierItem {
 export interface InventoryReport {
   inventoryId: number;
   organizationId: number;
+  itemId: number;
   itemName: string;
   sku: string;
   batchNumber?: string;
@@ -392,15 +449,24 @@ export interface InventoryReport {
   expiryDate?: string;
   stockInwardDate?: string;
   stockOutwardDate?: string;
-  openingQuantity: number;
-  currentQuantity: number;
-  inwardQuantity: number;
-  outwardQuantity: number;
-  committedQuantity: number;
-  availableQuantity: number;
-  damagedQuantity: number;
-  unitCost: number;
-  totalValue: number;
+  supplierPrice: number;
+  fobAmount: number;
+  allocation: number;
+  cAndHCharges: number;
+  freight: number;
+  costBeforeDuty: number;
+  dutyCharges: number;
+  costBeforeProfitMargin: number;
+  costPerUnit: number;
+  // openingQuantity: number;
+  // currentQuantity: number;
+  // inwardQuantity: number;
+  // outwardQuantity: number;
+  // committedQuantity: number;
+  // availableQuantity: number;
+  // damagedQuantity: number;
+  sellingPrice: number;
+  // totalValue: number;
   reorderLevel?: number;
   warehouseId: number;
   warehouseName: string;
@@ -414,10 +480,13 @@ export interface InventoryReport {
   createdBy: number;
   updatedAt: string;
   updatedBy: number;
+  grnId?: number;
+  grnNumber?: string;
 }
 
 export interface CreateInventoryReportPayload {
   organizationId: number;
+  itemId: number;
   itemName: string;
   sku: string;
   batchNumber?: string;
@@ -427,15 +496,24 @@ export interface CreateInventoryReportPayload {
   expiryDate?: string;
   stockInwardDate?: string;
   stockOutwardDate?: string;
-  openingQuantity: number;
-  currentQuantity: number;
-  inwardQuantity: number;
-  outwardQuantity: number;
-  committedQuantity: number;
-  availableQuantity: number;
-  damagedQuantity: number;
-  unitCost: number;
-  totalValue: number;
+  supplierPrice: number;
+  fobAmount: number;
+  allocation: number;
+  cAndHCharges: number;
+  freight: number;
+  costBeforeDuty: number;
+  dutyCharges: number;
+  costBeforeProfitMargin: number;
+  costPerUnit: number;
+  // openingQuantity: number;
+  // currentQuantity: number;
+  // inwardQuantity: number;
+  // outwardQuantity: number;
+  // committedQuantity: number;
+  // availableQuantity: number;
+  // damagedQuantity: number;
+  sellingPrice: number;
+  // totalValue: number;
   reorderLevel?: number;
   warehouseId: number;
   warehouseName: string;
@@ -447,9 +525,90 @@ export interface CreateInventoryReportPayload {
   barcode?: string;
 }
 
+export interface SalesOrder {
+  id: number;
+  organizationId: number;
+  warehouseId: number;
+  customerId: number;
+  orderNumber: string;
+  status: SalesOrderStatus;
+  totalAmount: number;
+  discount?: number;
+  tax?: number;
+  amountPaid: number;
+  paymentStatus: PaymentStatus;
+  orderDate: string; // Date in ISO format
+  expectedDate?: string;
+  deliveredDate?: string;
+  remarks?: string;
+  isActive: boolean;
+  salesOrderItems: SalesOrderItem[];
+}
+
+export interface SalesOrderItem {
+  id: number;
+  salesOrderId: number;
+  itemId: number;
+  itemName: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
+export interface CreateSalesOrderPayload {
+  organizationId: number;
+  customerId: number;
+  totalAmount: number;
+  amountPaid: number;
+  paymentStatus: PaymentStatus;
+  orderDate: string;
+  expectedDate?: string;
+  remarks?: string;
+  salesOrderItems: CreateSalesOrderItemPayload[];
+}
+
+export interface CreateSalesOrderItemPayload {
+  itemId: number;
+  itemName: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
+export enum SalesOrderStatus {
+  PENDING = "PENDING",
+  CONFIRMED = "CONFIRMED",
+  SHIPPED = "SHIPPED",
+  DELIVERED = "DELIVERED",
+  CANCELLED = "CANCELLED",
+}
+
+export enum PaymentStatus {
+  PENDING = "PENDING",
+  PAID = "PAID",
+  FAILED = "FAILED",
+  REFUNDED = "REFUNDED",
+}
+
+export interface SalesSummaryResponse {
+  salesSummary: {
+    today: number;
+    thisWeek: number;
+    thisMonth: number;
+    thisQuarter: number;
+    thisYear: number;
+  };
+  topSellingProducts: { itemId: number; itemName: string; quantity: number }[];
+  leastSellingProducts: { itemId: number; itemName: string; quantity: number }[];
+  topProfitMarginProducts: { itemId: number; itemName: string; profitMargin: number }[];
+  leastProfitMarginProducts: { itemId: number; itemName: string; profitMargin: number }[];
+}
+
+
 export const api = createApi({
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000",
+    // baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000",
+    baseUrl: 'http://localhost:8000',
     prepareHeaders: (headers) => {
       const token = localStorage.getItem("token");
       if (token) {
@@ -459,7 +618,7 @@ export const api = createApi({
     },
   }),
   reducerPath: "api",
-  tagTypes: ["Organizations", "Suppliers", "Customers", "Warehouses", "Items", "SupplierItems","SupplierSites", "PurchaseOrders", "GRNs", "Users", "InventoryReports"],
+  tagTypes: ["Organizations", "Suppliers", "Customers", "Warehouses", "Items", "SupplierItems", "SupplierSites", "PurchaseOrders", "GRNs", "Users", "InventoryReports", "SalesOrders"],
   endpoints: (builder) => ({
     loginUser: builder.mutation<AuthResponse, LoginUser>({
       query: (credentials) => ({
@@ -472,17 +631,85 @@ export const api = createApi({
       query: () => "/auth/me",
       providesTags: ["Users"],
     }),
-    sendEmail: builder.mutation<
-      { message: string },
-      { email: string; pdfBase64: string; fileName: string }>({
-      query: (emailData) => ({
-        url: "/email/send",
+    createUser: builder.mutation<{ message: string }, CreateUserRequest>({
+      query: (newUser) => ({
+        url: "/auth/create",
         method: "POST",
-        body: emailData,
+        body: newUser,
+      }),
+      invalidatesTags: ["Users"],
+    }),
+    forgotPassword: builder.mutation<{ message: string }, { email: string }>({
+      query: (credentials) => ({
+        url: "/auth/forgot-password",
+        method: "POST",
+        body: credentials,
       }),
     }),
+    resetPassword: builder.mutation<{ message: string }, { token: string; password: string }>({
+      query: (data) => ({
+        url: "/auth/reset-password",
+        method: "POST",
+        body: data,
+      }),
+    }),
+    verifyRegistration: builder.mutation<{ message: string }, { token: string; password: string }>({
+      query: (data) => ({
+        url: "/auth/verify-registration",
+        method: "POST",
+        body: data,
+      }),
+    }),
+    getUsersByOrganization: builder.query<User[], number>({
+      query: (organizationId) => `/auth?organizationId=${organizationId}`,
+      providesTags: ["Users"],
+    }),
+    updateUserRole: builder.mutation<{ message: string }, UpdateUserRoleRequest>({
+      query: ({ userId, roleId }) => ({
+        url: `/auth/${userId}/role`,
+        method: "PUT",
+        body: { roleId },
+      }),
+      invalidatesTags: ["Users"],
+    }),
+    deleteUser: builder.mutation<{ message: string }, DeleteUserRequest>({
+      query: ({ userId }) => ({
+        url: `/auth/${userId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Users"],
+    }),
+    sendEmail: builder.mutation<
+      { message: string },
+      { email: string; subject: string; text: string; pdfBase64: string; fileName: string }>({
+        query: (emailData) => ({
+          url: "/email/send",
+          method: "POST",
+          body: emailData,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }),
+      }),
+    sendWhatsAppText: builder.mutation<
+      { message: string },
+      { phoneNumber: string; message: string }>({
+      query: (whatsappData) => ({
+        url: "/email/send-whatsapp-text",  // Your backend route for sending text messages
+        method: "POST",
+        body: whatsappData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    }),
+
     getOrganizations: builder.query<Organization[], void>({
       query: () => "/organizations",
+      providesTags: ["Organizations"],
+    }),
+    getOrganizationById: builder.query<Organization, number>({
+      query: (id) => `/organizations/${id}`,
       providesTags: ["Organizations"],
     }),
     createOrganization: builder.mutation<Organization, CreateOrganizationPayload>({
@@ -533,8 +760,12 @@ export const api = createApi({
     }),
 
     // Suppliers Endpoints
-    getSuppliers: builder.query<Supplier[], number>({
-      query: (organizationId) => `/suppliers?organizationId=${organizationId}`,
+    getSuppliers: builder.query<Supplier[], { organizationId: number; search?: string }>({
+      query: ({ organizationId, search }) => {
+        let queryParams = `organizationId=${organizationId}`;
+        if (search) queryParams += `&search=${encodeURIComponent(search)}`;
+        return `/suppliers?${queryParams}`;
+      },
       providesTags: ["Suppliers"],
     }),
     createSupplier: builder.mutation<Supplier, CreateSupplierPayload>({
@@ -580,10 +811,10 @@ export const api = createApi({
       providesTags: ["SupplierItems"],
     }),
     updateSupplierItem: builder.mutation({
-      query: ({ supplierId, itemId, quantity, currency }) => ({
+      query: ({ supplierId, itemId, data }) => ({
         url: `suppliers/${supplierId}/items/${itemId}`,
-        method: "POST",
-        body: { itemId, quantity, currency },
+        method: "PUT",
+        body: data,
       }),
       invalidatesTags: ["SupplierItems"],
     }),
@@ -595,8 +826,16 @@ export const api = createApi({
 
 
     // Customers Endpoints
-    getCustomers: builder.query<Customer[], number>({
-      query: (organizationId) => `/customers?organizationId=${organizationId}`,
+    getCustomers: builder.query<Customer[], { organizationId: number; search?: string }>({
+      query: ({ organizationId, search }) => {
+        let queryParams = `organizationId=${organizationId}`;
+        if (search) queryParams += `&search=${encodeURIComponent(search)}`;
+        return `/customers?${queryParams}`;
+      },
+      providesTags: ["Customers"],
+    }),
+    getCustomerById: builder.query<Customer, number>({
+      query: (id) => `/customers/${id}`,
       providesTags: ["Customers"],
     }),
     createCustomer: builder.mutation<Customer, CreateCustomerPayload>({
@@ -624,8 +863,16 @@ export const api = createApi({
     }),
 
     //Warehouse endpoints
-    getWarehouses: builder.query<Warehouse[], number>({
-      query: (organizationId) => `/warehouses?organizationId=${organizationId}`,
+    getWarehouses: builder.query<Warehouse[], { organizationId: number; search?: string }>({
+      query: ({ organizationId, search }) => {
+        let queryParams = `organizationId=${organizationId}`;
+        if (search) queryParams += `&search=${encodeURIComponent(search)}`;
+        return `/warehouses?${queryParams}`;
+      },
+      providesTags: ["Warehouses"],
+    }),
+    getWarehouseById: builder.query<Warehouse, number>({
+      query: (id) => `/warehouses/${id}`,
       providesTags: ["Warehouses"],
     }),
     createWarehouse: builder.mutation<Warehouse, CreateWarehousePayload>({
@@ -658,8 +905,9 @@ export const api = createApi({
         body: { itemId, quantity },
       }),
     }),
-    getWarehouseStock: builder.query({
+    getWarehouseProducts: builder.query({
       query: (warehouseId) => `warehouses/${warehouseId}/stock`,
+      providesTags: ["Warehouses"],
     }),
     updateWarehouseStock: builder.mutation({
       query: ({ warehouseId, itemId, quantity }) => ({
@@ -670,8 +918,13 @@ export const api = createApi({
     }),
 
     //PRODUCT endpoints
-    getItems: builder.query<Item[], number>({
-      query: (organizationId) => `/items?organizationId=${organizationId}`,
+    getItems: builder.query<Item[], { organizationId: number; search?: string; category?: string }>({
+      query: ({ organizationId, search, category }) => {
+        let queryParams = `organizationId=${organizationId}`;
+        if (search) queryParams += `&search=${encodeURIComponent(search)}`;
+        if (category) queryParams += `&category=${encodeURIComponent(category)}`;
+        return `/items?${queryParams}`;
+      },
       providesTags: ["Items"],
     }),
     createItem: builder.mutation<Item, CreateItemPayload>({
@@ -733,8 +986,11 @@ export const api = createApi({
     }),
 
     // Purchase Orders
-    getPurchaseOrders: builder.query<PurchaseOrder[], number>({
-      query: (organizationId) => `/purchaseOrder?organizationId=${organizationId}`,
+    getPurchaseOrders: builder.query<PurchaseOrder[], { organizationId: number; status?: string }>({
+      query: ({ organizationId, status }) => {
+        const statusQuery = status ? `&status=${status}` : "";
+        return `/purchaseOrder?organizationId=${organizationId}${statusQuery}`;
+      },
       providesTags: ["PurchaseOrders"],
     }),
     getPurchaseOrderById: builder.query<PurchaseOrder, number>({
@@ -774,8 +1030,14 @@ export const api = createApi({
     }),
 
     // GRNs Endpoints
-    getGRNs: builder.query<GRN[], number>({
-      query: (organizationId) => `/grns?organizationId=${organizationId}`,
+    getGRNs: builder.query<GRN[], { organizationId: number; status?: string }>({
+      query: ({ organizationId, status }) => {
+        let url = `/grns?organizationId=${organizationId}`;
+        if (status) {
+          url += `&status=${status}`;
+        }
+        return url;
+      },
       providesTags: ["GRNs"],
     }),
     createGRN: builder.mutation<GRN, CreateGRNPayload>({
@@ -838,14 +1100,70 @@ export const api = createApi({
       }),
       invalidatesTags: ["InventoryReports"],
     }),
+
+    //salesOrder Endpoints
+    getSalesOrders: builder.query<SalesOrder[], { organizationId: number, status?: string, paymentStatus?: string }>({
+      query: ({ organizationId, status, paymentStatus }) => {
+        let queryString = `/salesOrder?organizationId=${organizationId}`;
+        if (status) {
+          queryString += `&status=${status}`;
+        }
+        if (paymentStatus) {
+          queryString += `&paymentStatus=${paymentStatus}`;
+        }
+        return queryString;
+      },
+      providesTags: ["SalesOrders"],
+    }),
+
+    getSalesOrderById: builder.query<SalesOrder, number>({
+      query: (id) => `/salesOrder/${id}`,
+      providesTags: ["SalesOrders"],
+    }),
+    createSalesOrder: builder.mutation<SalesOrder, CreateSalesOrderPayload>({
+      query: (newOrder) => ({
+        url: "/salesOrder/create",
+        method: "POST",
+        body: newOrder,
+      }),
+      invalidatesTags: ["SalesOrders"],
+    }),
+    updateSalesOrder: builder.mutation<SalesOrder, { id: number; data: Partial<SalesOrder> }>({
+      query: ({ id, data }) => ({
+        url: `/salesOrder/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["SalesOrders"],
+    }),
+    deleteSalesOrder: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `/salesOrder/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["SalesOrders"],
+    }),
+    getSalesSummary: builder.query<SalesSummaryResponse, number>({
+      query: (organizationId) => `/salesOrder/summary?organizationId=${organizationId}`,
+      providesTags: ["SalesOrders"],
+    }),
   }),
 });
 
 export const {
   useLoginUserMutation,
   useGetCurrentUserQuery,
+  useCreateUserMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
+  useVerifyRegistrationMutation,
+  useGetUsersByOrganizationQuery,
+  useUpdateUserRoleMutation,
+  useDeleteUserMutation,
   useSendEmailMutation,
+  useSendWhatsAppTextMutation,
   useGetOrganizationsQuery,
+  useGetOrganizationByIdQuery,
   useCreateOrganizationMutation,
   useUpdateOrganizationMutation,
   useDeleteOrganizationMutation,
@@ -855,17 +1173,19 @@ export const {
   useDeleteSupplierMutation,
   useCreateCustomerMutation,
   useGetCustomersQuery,
+  useGetCustomerByIdQuery,
   useDeleteCustomerMutation,
   useUpdateCustomerMutation,
   useCreateWarehouseMutation,
   useDeleteWarehouseMutation,
   useGetWarehousesQuery,
+  useGetWarehouseByIdQuery,
   useUpdateWarehouseMutation,
   useGetItemsQuery,
   useCreateItemMutation,
   useUpdateItemMutation,
   useDeleteItemMutation,
-  useGetWarehouseStockQuery,
+  useGetWarehouseProductsQuery,
   useUpdateWarehouseStockMutation,
   useAddItemToWarehouseMutation,
   useGetSupplierSitesQuery,
@@ -891,5 +1211,11 @@ export const {
   useCreateInventoryReportMutation,
   useGetInventoryReportByIdQuery,
   useUpdateInventoryReportMutation,
-  useDeleteInventoryReportMutation
+  useDeleteInventoryReportMutation,
+  useGetSalesOrdersQuery,
+  useCreateSalesOrderMutation,
+  useGetSalesOrderByIdQuery,
+  useUpdateSalesOrderMutation,
+  useDeleteSalesOrderMutation,
+  useGetSalesSummaryQuery
 } = api;
