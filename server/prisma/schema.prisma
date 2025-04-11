@@ -13,6 +13,11 @@ model Organization {
   contactEmail String   @unique
   contactPhone String
   address      String
+  address2     String?  
+  city         String   @default("")
+  state        String   @default("")
+  country      String   @default("")
+  zipCode      String   @default("")
   isActive     Boolean  @default(true)
   taxId        String? // Tax Identification Number
   dunsNumber   String? // DUNS Number
@@ -105,6 +110,12 @@ model Supplier {
   contactName    String
   contactEmail   String   @unique
   contactPhone   String
+  address        String   @default("")
+  address2       String?  @default("")
+  city           String   @default("")
+  state          String   @default("")
+  country        String   @default("")
+  zipCode        String   @default("")
   paymentTerms   String
   currency       String
   taxId          String?
@@ -154,6 +165,12 @@ model Customer {
   contactName    String
   contactEmail   String   @unique
   contactPhone   String
+  address        String   @default("")
+  address2       String?
+  city           String   @default("")
+  state          String   @default("")
+  country        String   @default("")
+  zipCode        String   @default("")
   paymentTerms   String
   currency       String
   taxId          String?
@@ -497,30 +514,30 @@ model GRNLineItem {
 }
 
 model InventoryReport {
-  inventoryId       Int          @id @default(autoincrement())
-  organizationId    Int
-  organization      Organization @relation(fields: [organizationId], references: [id])
-  itemId            Int
-  item              Item         @relation(fields: [itemId], references: [id])
-  itemName          String       @db.VarChar(255)
-  sku               String       @db.VarChar(50)
-  batchNumber       String?      @db.VarChar(50)
-  lotNumber         String?      @db.VarChar(50)
-  serialNumber      String?      @db.VarChar(50)
-  manufacturingDate DateTime?
-  expiryDate        DateTime?
-  stockInwardDate   DateTime?
-  stockOutwardDate  DateTime?
-  providedQuantity  Decimal      @db.Decimal(10, 2)
-  supplierPrice     Decimal      @db.Decimal(15, 2)
-  fobAmount         Decimal      @db.Decimal(15, 2)
-  allocation        Decimal      @db.Decimal(15, 2)
-  cAndHCharges      Decimal      @db.Decimal(15, 2)
-  freight           Decimal      @db.Decimal(15, 2)
-  costBeforeDuty    Decimal      @db.Decimal(15, 2)
-  dutyCharges       Decimal      @db.Decimal(15, 2)
-  costBeforeProfitMargin Decimal @db.Decimal(15, 2)
-  costPerUnit       Decimal      @db.Decimal(15, 2)
+  inventoryId            Int          @id @default(autoincrement())
+  organizationId         Int
+  organization           Organization @relation(fields: [organizationId], references: [id])
+  itemId                 Int
+  item                   Item         @relation(fields: [itemId], references: [id])
+  itemName               String       @db.VarChar(255)
+  sku                    String       @db.VarChar(50)
+  batchNumber            String?      @db.VarChar(50)
+  lotNumber              String?      @db.VarChar(50)
+  serialNumber           String?      @db.VarChar(50)
+  manufacturingDate      DateTime?
+  expiryDate             DateTime?
+  stockInwardDate        DateTime?
+  stockOutwardDate       DateTime?
+  providedQuantity       Decimal      @db.Decimal(10, 2)
+  supplierPrice          Decimal      @db.Decimal(15, 2)
+  fobAmount              Decimal      @db.Decimal(15, 2)
+  allocation             Decimal      @db.Decimal(15, 2)
+  cAndHCharges           Decimal      @db.Decimal(15, 2)
+  freight                Decimal      @db.Decimal(15, 2)
+  costBeforeDuty         Decimal      @db.Decimal(15, 2)
+  dutyCharges            Decimal      @db.Decimal(15, 2)
+  costBeforeProfitMargin Decimal      @db.Decimal(15, 2)
+  costPerUnit            Decimal      @db.Decimal(15, 2)
   // openingQuantity   Decimal      @db.Decimal(10, 2)
   // currentQuantity   Decimal      @db.Decimal(10, 2)
   // inwardQuantity    Decimal      @db.Decimal(10, 2)
@@ -528,9 +545,9 @@ model InventoryReport {
   // committedQuantity Decimal      @db.Decimal(10, 2)
   // availableQuantity Decimal      @db.Decimal(10, 2)
   // damagedQuantity   Decimal      @db.Decimal(10, 2)
-  sellingPrice      Decimal      @db.Decimal(15, 2)
+  sellingPrice           Decimal      @db.Decimal(15, 2)
   // totalValue        Decimal      @db.Decimal(20, 2)
-  reorderLevel      Decimal?     @db.Decimal(10, 2)
+  reorderLevel           Decimal?     @db.Decimal(10, 2)
 
   warehouseId Int
   warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)

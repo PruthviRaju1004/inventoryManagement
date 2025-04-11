@@ -12,7 +12,8 @@ export const createSupplier = async (req: Request, res: Response): Promise<void>
     }
 
     try {
-        const { organizationId, name, supplierCode, contactName, contactEmail, contactPhone, paymentTerms, currency, taxId } = req.body;
+        const { organizationId, name, supplierCode, contactName, contactEmail, contactPhone,
+            address, address2, city, country, zipCode, paymentTerms, currency, taxId } = req.body;
         const userId = (req as any).user.id;
         if (!supplierCode) {
             res.status(400).json({ message: "Supplier code is required" });
@@ -31,6 +32,11 @@ export const createSupplier = async (req: Request, res: Response): Promise<void>
                 contactName,
                 contactEmail,
                 contactPhone,
+                address,
+                address2,
+                city,
+                country,
+                zipCode,
                 paymentTerms,
                 currency,
                 taxId,
@@ -82,10 +88,11 @@ export const updateSupplier = async (req: Request, res: Response): Promise<void>
             return;
         }
 
-        const { name, contactName, contactEmail, contactPhone, paymentTerms, currency, taxId } = req.body;
+        const { name, contactName, contactEmail, contactPhone, address, address2, city, country, zipCode,
+            paymentTerms, currency, taxId } = req.body;
         const updatedSupplier = await prisma.supplier.update({
             where: { id: Number(id) },
-            data: { name, contactName, contactEmail, contactPhone, paymentTerms, currency, taxId },
+            data: { name, contactName, contactEmail, contactPhone, address, address2, city, country, zipCode, paymentTerms, currency, taxId },
         });
         res.status(200).json({ message: "Supplier updated successfully", supplier: updatedSupplier });
     } catch (error) {

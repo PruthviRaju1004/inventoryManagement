@@ -77,10 +77,10 @@ const ProfitMarginTable: React.FC<ProfitMarginTableProps> = ({ title, products }
             products.map((item, index) => (
               <tr key={index}>
                 <td style={thTdStyle}>{item.itemName}</td>
-                <td style={thTdStyle}>{item.costPrice.toFixed(2)}</td>
-                <td style={thTdStyle}>{item.salePrice.toFixed(2)}</td>
-                <td style={thTdStyle}>{item.profit.toFixed(2)}</td>
-                <td style={thTdStyle}>{item.profitPercentage.toFixed(2)}%</td>
+                <td style={thTdStyle}>{item.costPrice}</td>
+                <td style={thTdStyle}>{item.salePrice}</td>
+                <td style={thTdStyle}>{item.salePrice-item.costPrice}</td>
+                <td style={thTdStyle}>{(((item.salePrice-item.costPrice)/(item.costPrice))*100).toFixed(2)}%</td>
               </tr>
             ))
           ) : (
@@ -117,16 +117,16 @@ const Dashboard = () => {
     profitMargin: product.profitMargin,
     profitPercentage: product.profitPercentage || 0,
     profit: product.profit || 0,
-    salePrice: product.salePrice || 0,
-    costPrice: product.costPrice || 0,
+    salePrice: product.unitPrice || 0,
+    costPrice: product.costPerUnit || 0,
   })) || [];
   const leastProfitMargin = salesSummary?.leastProfitMarginProducts.map((product: any) => ({
     itemName: product.itemName,
     profitMargin: product.profitMargin,
     profitPercentage: product.profitPercentage || 0,
     profit: product.profit || 0,
-    salePrice: product.salePrice || 0,
-    costPrice: product.costPrice || 0,
+    salePrice: product.unitPrice || 0,
+    costPrice: product.costPerUnit || 0,
   })) || [];
 
   return (

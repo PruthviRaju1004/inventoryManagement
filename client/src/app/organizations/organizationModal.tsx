@@ -5,6 +5,7 @@ import {
   useUpdateOrganizationMutation,
 } from "@/state/api";
 import { TextField } from "@mui/material";
+import AddressFields from "../{components}/address";
 
 type Organization = {
   id?: number;
@@ -12,6 +13,10 @@ type Organization = {
   contactEmail: string;
   contactPhone: string;
   address: string;
+  city: string;
+  state: string;
+  country: string;
+  zipCode: string;
   taxId?: string;
   dunsNumber?: string;
   website?: string;
@@ -20,11 +25,16 @@ type Organization = {
 };
 
 const OrganizationModal = ({ organization, onClose }: { organization: any; onClose: () => void }) => {
-  const [formData, setFormData] = useState<Omit<Organization, "legalProofs">>({
+  const [formData, setFormData] = useState<Omit<Organization, "legalProofs"> & { city: string; state: string; country: string; zipCode: string; address2?: string }>({
     name: "",
     contactEmail: "",
     contactPhone: "",
     address: "",
+    address2: "",
+    city: "",
+    state: "",
+    country: "",
+    zipCode: "",
     taxId: "",
     dunsNumber: "",
     website: "",
@@ -43,6 +53,11 @@ const OrganizationModal = ({ organization, onClose }: { organization: any; onClo
         contactEmail: organization.contactEmail || "",
         contactPhone: organization.contactPhone || "",
         address: organization.address || "",
+        address2: organization.address2 || "",
+        city: organization.city || "",
+        state: organization.state || "",
+        country: organization.country || "",
+        zipCode: organization.zipCode || "",
         taxId: organization.taxId || "",
         dunsNumber: organization.dunsNumber || "",
         website: organization.website || "",
@@ -64,7 +79,7 @@ const OrganizationModal = ({ organization, onClose }: { organization: any; onClo
       socialMedia: { ...prev.socialMedia, [name]: value },
     }));
   };
-  
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLegalProofFiles(e.target.files);
   };
@@ -101,12 +116,18 @@ const OrganizationModal = ({ organization, onClose }: { organization: any; onClo
           contactEmail: formDataObj.get("contactEmail") as string,
           contactPhone: formDataObj.get("contactPhone") as string,
           address: formDataObj.get("address") as string,
+          address2: formDataObj.get("address2") as string,
+          city: formDataObj.get("city") as string,
+          state: formDataObj.get("state") as string,
+          country: formDataObj.get("country") as string,
+          zipCode: formDataObj.get("zipCode") as string,
           taxId: formDataObj.get("taxId") as string,
           dunsNumber: formDataObj.get("dunsNumber") as string,
           website: formDataObj.get("website") as string,
           socialMedia: JSON.parse(formDataObj.get("socialMedia") as string),
           legalProofs: legalProofFiles ? Array.from(legalProofFiles) : [],
         };
+        // console.log("Payload for creating organization:", payload);
         await createOrganization(payload).unwrap();
       }
 
@@ -117,24 +138,32 @@ const OrganizationModal = ({ organization, onClose }: { organization: any; onClo
       setLoading(false);
     }
   };
-  
-  
+
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-[25%] max-h-[80vh] overflow-y-auto border-black-200">
         <h2 className="text-xl font-semibold mb-4">{organization ? "Edit Organization" : "Create Organization"}</h2>
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <TextField type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Organization Name" className="w-full p-2 border rounded" required />
-          <TextField type="email" name="contactEmail" value={formData.contactEmail} onChange={handleChange} placeholder="Contact Email" className="w-full p-2 border rounded" required />
-          <TextField type="text" name="contactPhone" value={formData.contactPhone} onChange={handleChange} placeholder="Contact Phone" className="w-full p-2 border rounded" required />
-          <TextField type="text" name="address" value={formData.address} onChange={handleChange} placeholder="Address" className="w-full p-2 border rounded" required />
-          <TextField type="text" name="taxId" value={formData.taxId} onChange={handleChange} placeholder="Tax ID" fullWidth />
-          <TextField type="text" name="dunsNumber" value={formData.dunsNumber} onChange={handleChange} placeholder="DUNS Number" fullWidth />
-          <TextField type="text" name="website" value={formData.website} onChange={handleChange} placeholder="Website" fullWidth />
-          <TextField type="text" name="twitter" value={formData.socialMedia?.twitter || ""} onChange={handleSocialMediaChange} placeholder="Twitter URL" fullWidth />
-          <TextField type="text" name="facebook" value={formData.socialMedia?.facebook || ""} onChange={handleSocialMediaChange} placeholder="Facebook URL" fullWidth />
-          <TextField type="text" name="linkedin" value={formData.socialMedia?.linkedin || ""} onChange={handleSocialMediaChange} placeholder="LinkedIn URL" fullWidth />
-           {/* Existing legal proofs display */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <TextField type="text" name="name" value={formData.name} onChange={handleChange} label="Organization Name" className="w-full p-2 border rounded mb-2" required />
+          <TextField type="email" name="contactEmail" value={formData.contactEmail} onChange={handleChange} label="Contact Email" className="w-full p-2 border rounded" required />
+          <TextField type="text" name="contactPhone" value={formData.contactPhone} onChange={handleChange} label="Contact Phone" className="w-full p-2 border rounded" required />
+          <AddressFields
+            address={formData.address}
+            address2={formData.address2 || ""}
+            city={formData.city}
+            state={formData.state}
+            country={formData.country}
+            zipCode={formData.zipCode}
+            onChange={handleChange}
+          />
+          <TextField type="text" name="taxId" value={formData.taxId} onChange={handleChange} label="Tax ID" fullWidth />
+          <TextField type="text" name="dunsNumber" value={formData.dunsNumber} onChange={handleChange} label="DUNS Number" fullWidth />
+          <TextField type="text" name="website" value={formData.website} onChange={handleChange} label="Website" fullWidth />
+          <TextField type="text" name="twitter" value={formData.socialMedia?.twitter || ""} onChange={handleSocialMediaChange} label="Twitter URL" fullWidth />
+          <TextField type="text" name="facebook" value={formData.socialMedia?.facebook || ""} onChange={handleSocialMediaChange} label="Facebook URL" fullWidth />
+          <TextField type="text" name="linkedin" value={formData.socialMedia?.linkedin || ""} onChange={handleSocialMediaChange} label="LinkedIn URL" fullWidth />
+          {/* Existing legal proofs display */}
           {existingLegalProofs.length > 0 && (
             <div>
               <h3 className="text-sm font-medium">Existing Legal Proofs:</h3>

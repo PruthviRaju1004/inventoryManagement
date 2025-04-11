@@ -51,7 +51,19 @@ const Organizations = () => {
     { field: "name", headerName: "Name", flex: 1, minWidth: 150 },
     { field: "contactEmail", headerName: "Email", flex: 1, minWidth: 200 },
     { field: "contactPhone", headerName: "Phone", flex: 1, minWidth: 200 },
-    { field: "address", headerName: "Address", flex: 1, minWidth: 250 },
+    {
+      field: "fullAddress",
+      headerName: "Address",
+      flex: 1,
+      minWidth: 300,
+      renderCell: (params: GridRenderCellParams) => {
+        if (!params?.row) return "";
+        const { address, address2, city, state, country, zipCode } = params.row;
+        return [address, address2, city, state, country, zipCode]
+          .filter(Boolean)
+          .join(", ");
+      },
+    },
     { field: "taxId", headerName: "Tax ID", flex: 1, minWidth: 150 },
     { field: "dunsNumber", headerName: "DUNS Number", flex: 1, minWidth: 150 },
     { field: "website", headerName: "Website", flex: 1, minWidth: 250 },

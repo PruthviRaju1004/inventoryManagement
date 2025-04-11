@@ -75,6 +75,16 @@ const Suppliers = () => {
         { accessorKey: "supplierCode", header: "Supplier Code" },
         { accessorKey: "contactEmail", header: "Email" },
         { accessorKey: "contactPhone", header: "Phone" },
+        {
+            accessorKey: "fullAddress",
+            header: "Address",
+            cell: ({ row }: { row: { original: Supplier } }) => {
+                const { address, address2, city, state, country, zipCode } = row.original;
+                return [address2, address, city, state, country, zipCode]
+                    .filter(Boolean)
+                    .join(", ");
+            },
+        },
         { accessorKey: "contactName", header: "Contact Name" },
         { accessorKey: "paymentTerms", header: "Payment Terms" },
         { accessorKey: "taxId", header: "Tax ID" },

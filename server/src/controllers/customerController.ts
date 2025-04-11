@@ -6,7 +6,8 @@ const prisma = new PrismaClient();
 // Create Customer (Only Super Admin)
 export const createCustomer = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { organizationId, name, customerCode, contactName, contactEmail, contactPhone, paymentTerms, currency, taxId } = req.body;
+        const { organizationId, name, customerCode, contactName, address, address2, city, state, country, zipCode,
+            contactEmail, contactPhone, paymentTerms, currency, taxId } = req.body;
         const userId = (req as any).user.id;
 
         if (!customerCode) {
@@ -28,6 +29,12 @@ export const createCustomer = async (req: Request, res: Response): Promise<void>
                 contactName,
                 contactEmail,
                 contactPhone,
+                address,
+                address2,
+                city,
+                state,
+                country,
+                zipCode,
                 paymentTerms,
                 currency,
                 taxId,
@@ -83,12 +90,12 @@ export const updateCustomer = async (req: Request, res: Response): Promise<void>
             return;
         }
 
-        const { name, contactName, contactEmail, contactPhone, paymentTerms, currency, taxId } = req.body;
+        const { name, contactName, contactEmail, contactPhone, address, address2, city, state, country, zipCode,
+             paymentTerms, currency, taxId } = req.body;
         const updatedCustomer = await prisma.customer.update({
             where: { id: Number(id) },
-            data: { name, contactName, contactEmail, contactPhone, paymentTerms, currency, taxId },
+            data: { name, contactName, contactEmail, contactPhone, address, address2, city, state, country, zipCode, paymentTerms, currency, taxId },
         });
-
         res.status(200).json({ message: "Customer updated successfully", customer: updatedCustomer });
     } catch (error) {
         console.error("Error updating customer:", error);

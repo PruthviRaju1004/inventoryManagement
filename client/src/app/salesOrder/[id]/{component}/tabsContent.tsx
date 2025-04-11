@@ -134,11 +134,11 @@ const SalesDocument = ({ documentType, salesId }: { documentType: any; salesId: 
     return (
         <Box sx={{ p: 4, maxWidth: "900px", margin: "auto", background: "#fff", borderRadius: "10px", width: "100%" }}>
             <Box ref={pdfRef} sx={{ p: 4, background: "#fff" }}>
-                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Box>
+                <Box sx={{ alignItems: "center" }}>
+                    {/* <Box>
                         <Typography variant="h6" fontWeight="bold">Your Company</Typography>
                         <Typography>Ontario, Canada</Typography>
-                    </Box>
+                    </Box> */}
                     <Box textAlign="right">
                         <Typography variant="h4" fontWeight="bold">{documentType.toUpperCase()}</Typography>
                         <Typography># {salesOrder.orderNumber}</Typography>
@@ -154,8 +154,8 @@ const SalesDocument = ({ documentType, salesId }: { documentType: any; salesId: 
                         <Typography>Loading warehouse details...</Typography>
                     ) : warehouse ? (
                         <>
-                            <Typography>{warehouse.name}</Typography>
-                            <Typography>{warehouse.address}</Typography>
+                            <Typography><strong>Warehouse Name:</strong>{warehouse.name}</Typography>
+                            <Typography><strong>Warehouse Address:</strong>{warehouse.address}</Typography>
                         </>
                     ) : (
                         <Typography>No warehouse details found.</Typography>
@@ -169,9 +169,15 @@ const SalesDocument = ({ documentType, salesId }: { documentType: any; salesId: 
                         <Typography>Loading customer details...</Typography>
                     ) : customer ? (
                         <>
-                            <Typography>{customer.name}</Typography>
-                            <Typography>{customer.contactEmail}</Typography>
-                            <Typography>{customer.contactPhone}</Typography>
+                            <Typography><strong>Customer Name:</strong>{customer.name}</Typography>
+                            <br />
+                            <Typography><strong>Customer Address:</strong></Typography>
+                            <Typography>{customer.address2 ? customer.address2 : customer.address}</Typography>
+                            <Typography>{customer.address}</Typography>
+                            <Typography>{customer.state}{","}{customer.country}{","}{customer.zipCode}</Typography>
+                            <br />
+                            <Typography><strong>Customer Email:</strong>{customer.contactEmail}</Typography>
+                            <Typography><strong>Customer Phone:</strong>{customer.contactPhone}</Typography>
                         </>
                     ) : (
                         <Typography>No customer details found.</Typography>

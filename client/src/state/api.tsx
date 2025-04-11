@@ -95,6 +95,12 @@ export interface Supplier {
   contactName: string;
   contactEmail: string;
   contactPhone: string;
+  address: string;
+  address2?: string;
+  city: string;
+  country: string;
+  state: string;
+  zipCode: string;
   paymentTerms: string;
   currency: string;
   taxId: string;
@@ -109,6 +115,12 @@ export interface CreateSupplierPayload {
   contactName: string;
   contactEmail: string;
   contactPhone: string;
+  address: string;
+  address2?: string;
+  city: string;
+  country: string;
+  state: string;
+  zipCode: string;
   paymentTerms: string;
   currency: string;
   taxId: string;
@@ -122,6 +134,12 @@ export interface Customer {
   contactName: string;
   contactEmail: string;
   contactPhone: string;
+  address: string;
+  address2?: string;
+  city: string;
+  state: string;
+  country: string;
+  zipCode: string;
   paymentTerms: string;
   currency: string;
   taxId: string;
@@ -136,6 +154,12 @@ export interface CreateCustomerPayload {
   contactName: string;
   contactEmail: string;
   contactPhone: string;
+  address: string;
+  address2?: string;
+  city: string;
+  state: string;
+  country: string;
+  zipCode: string;
   paymentTerms: string;
   currency: string;
   taxId: string;
@@ -304,6 +328,13 @@ export interface PurchaseOrder {
     name: string;
     contactEmail: string;
     contactName: string;
+    contactPhone: string;
+    address: string;
+    address2: string;
+    city: string;
+    state: string;
+    country: string;
+    zipCode: string;
   };
   purchaseOrderItems: {
     itemName: string;
@@ -356,6 +387,13 @@ export interface GRN {
     name: string;
     contactEmail: string;
     contactName: string;
+    contactPhone: string;
+    address: string;
+    address2: string;
+    city: string;
+    state: string;
+    country: string;
+    zipCode: string;
   };
   warehouse: {
     id: number;
@@ -607,8 +645,8 @@ export interface SalesSummaryResponse {
 
 export const api = createApi({
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://inventorymanagement-production-6ff8.up.railway.app",
-    // baseUrl: 'http://localhost:8000',
+    // baseUrl: "https://inventorymanagement-production-6ff8.up.railway.app",
+    baseUrl: 'http://localhost:8000',
     prepareHeaders: (headers) => {
       const token = localStorage.getItem("token");
       if (token) {

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useCreateSupplierMutation, useUpdateSupplierMutation, Supplier } from "@/state/api";
 import { TextField } from "@mui/material";
+import AddressFields from "../{components}/address";
 
 const SupplierModal = ({ supplier, organizationId, onClose }: { supplier: Supplier | null; organizationId: number | null; onClose: () => void }) => {
   const [formData, setFormData] = useState({
@@ -10,6 +11,12 @@ const SupplierModal = ({ supplier, organizationId, onClose }: { supplier: Suppli
     contactEmail: "",
     contactPhone: "",
     contactName: "",
+    address: "",
+    address2: "", 
+    city: "",
+    state: "",
+    country: "",
+    zipCode: "",
     paymentTerms: "",
     currency: "",
     taxId: "",
@@ -25,7 +32,12 @@ const SupplierModal = ({ supplier, organizationId, onClose }: { supplier: Suppli
         supplierCode: supplier.supplierCode || "",
         contactEmail: supplier.contactEmail || "",
         contactPhone: supplier.contactPhone || "",
-        // address: supplier.address || "",
+        address: supplier.address || "",
+        address2: supplier.address2 || "",
+        city: supplier.city || "",
+        state: supplier.state || "",
+        country: supplier.country || "",
+        zipCode: supplier.zipCode || "",
         contactName: supplier.contactName || "",
         paymentTerms: supplier.paymentTerms || "",
         currency: supplier.currency || "",
@@ -38,6 +50,12 @@ const SupplierModal = ({ supplier, organizationId, onClose }: { supplier: Suppli
         contactEmail: "",
         contactPhone: "",
         contactName: "",
+        address: "",
+        address2: "",
+        city: "",
+        state: "",
+        country: "",
+        zipCode: "",
         paymentTerms: "",
         currency: "",
         taxId: ""
@@ -72,11 +90,19 @@ const SupplierModal = ({ supplier, organizationId, onClose }: { supplier: Suppli
           <TextField type="text" name="supplierCode" value={formData.supplierCode} onChange={handleChange} placeholder="Supplier Code" className="w-full p-2 border rounded" required />
           <TextField type="email" name="contactEmail" value={formData.contactEmail} onChange={handleChange} placeholder="Contact Email" className="w-full p-2 border rounded" required />
           <TextField type="text" name="contactPhone" value={formData.contactPhone} onChange={handleChange} placeholder="Contact Phone" className="w-full p-2 border rounded" required />
+          <AddressFields
+            address={formData.address}
+            address2={formData.address2}
+            city={formData.city}
+            state={formData.state}
+            country={formData.country}
+            zipCode={formData.zipCode}
+            onChange={handleChange}
+          />
           <TextField type="text" name="contactName" value={formData.contactName} onChange={handleChange} placeholder="Contact Name" className="w-full p-2 border rounded" required />
           <TextField type="text" name="paymentTerms" value={formData.paymentTerms} onChange={handleChange} placeholder="Payment Terms" className="w-full p-2 border rounded" required />
           <TextField type="text" name="currency" value={formData.currency} onChange={handleChange} placeholder="Currency" className="w-full p-2 border rounded" required />
           <TextField type="text" name="taxId" value={formData.taxId} onChange={handleChange} placeholder="Tax ID" className="w-full p-2 border rounded" required />
-          {/* <input type="text" name="address" value={formData.address} onChange={handleChange} placeholder="Address" className="w-full p-2 border rounded" required /> */}
           <div className="flex justify-end gap-3 mt-4">
             <button type="button" onClick={onClose} className="mt-4 btn-cancel">Cancel</button>
             <button type="submit" className="mt-4 btn-primary">{supplier ? "Update" : "Create"}</button>

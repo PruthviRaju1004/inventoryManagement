@@ -238,7 +238,7 @@ export const getSalesSummary = async (req: Request, res: Response): Promise<void
         const sortedProducts = Array.from(productSalesMap.values()).sort((a, b) => b.quantity - a.quantity);
 
         const topSellingProducts = sortedProducts.slice(0, 5);
-        const leastSellingProducts = sortedProducts.slice(-5);
+        const leastSellingProducts = sortedProducts.slice(-5).reverse();
 
         // Get Profit Margin Data
         const profitMarginData = await prisma.salesOrderItem.findMany({
@@ -248,19 +248,31 @@ export const getSalesSummary = async (req: Request, res: Response): Promise<void
                 itemName: true,
                 unitPrice: true,
                 quantity: true,
-                item: { select: { costPrice: true } }, // Assuming costPrice exists
+                item: {
+                    select: {
+                        InventoryReport: {
+                            orderBy: { createdAt: "desc" },
+                            take: 1,
+                            select: {
+                                costPerUnit: true,
+                            }
+                        }
+                    }
+                },
             },
         });
-
-        const profitMargins = profitMarginData.map(({ itemId, itemName, unitPrice, quantity, item }) => ({
-            itemId,
-            itemName,
-            unitPrice,
-            profitMargin: (Number(unitPrice) - Number(item.costPrice || 0)) * Number(quantity),
-        }));
-
+        const profitMargins = profitMarginData.map(({ itemId, itemName, unitPrice, quantity, item }) => {
+            const costPerUnit = item.InventoryReport[0]?.costPerUnit ?? 0;
+            const profit = (Number(unitPrice) - Number(costPerUnit)) * Number(quantity);
+            return {
+                itemId,
+                itemName,
+                costPerUnit,
+                unitPrice,
+                profitMargin: profit,
+            };
+        });
         const sortedProfitMargins = profitMargins.sort((a, b) => b.profitMargin - a.profitMargin);
-
         const topProfitMarginProducts = sortedProfitMargins.slice(0, 5);
         const leastProfitMarginProducts = sortedProfitMargins.slice(-5);
 

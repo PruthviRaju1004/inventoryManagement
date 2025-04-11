@@ -1,0 +1,22 @@
+-- AlterTable
+ALTER TABLE "customers" ADD COLUMN     "address" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "address2" TEXT,
+ADD COLUMN     "city" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "country" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "state" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "zipCode" TEXT NOT NULL DEFAULT '';
+
+-- AlterTable
+ALTER TABLE "organizations" ADD COLUMN     "address2" TEXT,
+ADD COLUMN     "city" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "country" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "state" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "zipCode" TEXT NOT NULL DEFAULT '';
+
+-- AlterTable
+ALTER TABLE "suppliers" ADD COLUMN     "address" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "address2" TEXT DEFAULT '',
+ADD COLUMN     "city" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "country" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "state" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "zipCode" TEXT NOT NULL DEFAULT '';

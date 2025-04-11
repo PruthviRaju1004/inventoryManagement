@@ -73,11 +73,7 @@ const GRNDetail = () => {
         <Box sx={{ p: 4, maxWidth: "900px", margin: "auto", background: "#fff", borderRadius: "10px", width: "100%" }}>
             <Box ref={pdfRef} sx={{ p: 4, background: "#fff" }}>
                 {/* Header */}
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <Box>
-                        <Typography variant="h6" fontWeight="bold">Own Org</Typography>
-                        <Typography>Ontario, Canada</Typography>
-                    </Box>
+                <Box sx={{ alignItems: "center" }}>
                     <Box textAlign="right">
                         <Typography variant="h4" fontWeight="bold">GOODS RECEIPT NOTE</Typography>
                         <Typography># {grn.grnNumber}</Typography>
@@ -86,9 +82,15 @@ const GRNDetail = () => {
 
                 {/* Supplier & Warehouse Details */}
                 <Box sx={{ mt: 2 }}>
-                    <Typography fontWeight="bold">Supplier</Typography>
+                    <Typography fontWeight="bold">Supplier Details</Typography>
                     <Typography><strong>Supplier Name:</strong>{grn.supplier.name}</Typography>
+                    <br />
+                    <Typography><strong>Supplier Address:</strong></Typography>
+                    <Typography>{grn.supplier.address}</Typography>
+                    <Typography>{grn.supplier.city}, {grn.supplier.state}</Typography>
+                    <Typography>{grn.supplier.country}, {grn.supplier.zipCode}</Typography>
                     <Typography><strong>Supplier Email:</strong>{grn.supplier.contactEmail}</Typography>
+                    <Typography><strong>Supplier Phone:</strong>{grn.supplier.contactPhone}</Typography>
                 </Box>
 
                 <Box sx={{ mt: 2 }}>
@@ -147,12 +149,12 @@ const GRNDetail = () => {
 
             {/* Download PDF Button */}
             <div className="mt-4 flex justify-between gap-4">
-                <button className="mt-4 bg-primary_btn_color text-[#fff] font-medium 
+                <button className="mt-4 bg-[#333] text-[#fff] font-medium 
                         font-sans text-base text-center px-4 h-12 rounded-sm float-right" onClick={generatePDF}>
                     Download PDF
                 </button>
                 <button
-                    className="mt-4 bg-primary_btn_color text-[#fff] font-medium 
+                    className="mt-4 bg-[#333] text-[#fff] font-medium 
                         font-sans text-base text-center px-4 h-12 rounded-sm float-right"
                     onClick={handleSendEmail}>
                     Send Email

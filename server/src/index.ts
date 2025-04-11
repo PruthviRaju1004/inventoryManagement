@@ -6,10 +6,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import path from 'path';
 
-console.log("Loading environment variables...");
 dotenv.config();
-console.log("JWT_SECRET:", process.env.JWT_SECRET);
-console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
 //Route imports
 import organizationRoutes from './routes/organizationRoutes';

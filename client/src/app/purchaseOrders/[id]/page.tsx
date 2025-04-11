@@ -74,7 +74,6 @@ const PurchaseOrderDetail = () => {
     const handleSendWhatsApp = async () => {
         setIsSendingWhatsApp(true);
     
-        // Format purchase order details as text
         const message = `*Purchase Order #${purchaseOrder.orderNumber}*\n\n` +
             `*Supplier:* ${purchaseOrder.supplier.name}\n` +
             `*Email:* ${purchaseOrder.supplier.contactEmail}\n` +
@@ -94,7 +93,7 @@ const PurchaseOrderDetail = () => {
         // Send to Backend to send via WhatsApp
         try {
             const response = await sendWhatsAppText({
-                phoneNumber: "+15145503765", // Replace with actual phone number
+                phoneNumber: "15145503765", // Replace with actual phone number
                 message,
             }).unwrap();
             alert(response.message);
@@ -110,11 +109,7 @@ const PurchaseOrderDetail = () => {
     return (
         <Box sx={{ p: 4, maxWidth: "900px", margin: "auto", background: "#fff", borderRadius: "10px", width: "100%" }}>
             <Box ref={pdfRef} sx={{ p: 4, background: "#fff" }}>
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <Box>
-                        <Typography variant="h6" fontWeight="bold">Own org</Typography>
-                        <Typography>Ontario, Canada</Typography>
-                    </Box>
+                <Box sx={{ alignItems: "center" }}>
                     <Box textAlign="right">
                         <Typography variant="h4" fontWeight="bold">PURCHASE ORDER</Typography>
                         <Typography># {purchaseOrder.orderNumber}</Typography>
@@ -123,9 +118,15 @@ const PurchaseOrderDetail = () => {
 
                 <Box sx={{ mt: 2 }}>
                     <Typography fontWeight="bold">Supplier Details</Typography>
-                    <Typography color="primary">{purchaseOrder.supplier.name}</Typography>
-                    <Typography>{purchaseOrder.supplier.contactEmail}</Typography>
-                    <Typography>{purchaseOrder.supplier.contactName}</Typography>
+                    <Typography color="primary"><strong>Supplier Name:</strong>{purchaseOrder.supplier.name}</Typography>
+                    <br />
+                    <Typography><strong>Supplier Address:</strong></Typography>
+                    <Typography>{purchaseOrder.supplier.address}</Typography>
+                    <Typography>{purchaseOrder.supplier.city}, {purchaseOrder.supplier.state}, {purchaseOrder.supplier.country} - {purchaseOrder.supplier.zipCode}</Typography>
+                    <br />
+                    <Typography><strong>Supplier Phone:</strong>{purchaseOrder.supplier.contactPhone}</Typography>
+                    <Typography><strong>Supplier Email:</strong>{purchaseOrder.supplier.contactEmail}</Typography>
+                    <Typography><strong>Supplier Contact Name:</strong>{purchaseOrder.supplier.contactName}</Typography>
                 </Box>
 
                 <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
@@ -176,12 +177,12 @@ const PurchaseOrderDetail = () => {
 
             {/* Buttons */}
             <div className="mt-4 flex justify-between gap-4">
-                <button className="mt-4 bg-primary_btn_color text-[#fff] font-medium 
+                <button className="mt-4 bg-[#333] text-[#fff] font-medium 
                         font-sans text-base text-center px-4 h-12 rounded-sm float-right" onClick={generatePDF}>
                     Download PDF
                 </button>
                 <button
-                    className="mt-4 bg-primary_btn_color text-[#fff] font-medium 
+                    className="mt-4 bg-[#333] text-[#fff] font-medium 
                         font-sans text-base text-center px-4 h-12 rounded-sm float-right"
                     onClick={handleSendEmail}>
                     Send Email

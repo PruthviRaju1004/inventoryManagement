@@ -75,6 +75,17 @@ const Customers = () => {
     { accessorKey: "customerCode", header: "Customer Code" },
     { accessorKey: "contactEmail", header: "Email" },
     { accessorKey: "contactPhone", header: "Phone" },
+    { accessorKey: "contactName", header: "Contact Name" },
+    {
+      accessorKey: "fullAddress",
+      header: "Address",
+      cell: ({ row }: { row: { original: Customer } }) => {
+        const { address, address2, city, state, country, zipCode } = row.original;
+        return [address2, address, city, state, country, zipCode]
+          .filter(Boolean)
+          .join(", ");
+      },
+    },
     { accessorKey: "paymentTerms", header: "Payment Terms" },
     { accessorKey: "taxId", header: "Tax ID" },
     ...(userRole !== 4

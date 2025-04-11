@@ -12,7 +12,7 @@ export const createOrganization = async (req: Request, res: Response): Promise<v
     }
 
     try {
-        const { name, contactEmail, contactPhone, address, taxId, dunsNumber, website, socialMedia } = req.body;
+        const { name, contactEmail, contactPhone, address, address2, city, country, state, zipCode, taxId, dunsNumber, website, socialMedia } = req.body;
         const userId = (req as any).user.id;
         // Get uploaded file paths
         const legalProofs = req.files ? (req.files as Express.Multer.File[]).map(file => `/uploads/${file.filename}`) : [];
@@ -27,6 +27,11 @@ export const createOrganization = async (req: Request, res: Response): Promise<v
                 contactEmail,
                 contactPhone,
                 address,
+                address2,
+                city,
+                country,
+                state,
+                zipCode,
                 taxId,
                 dunsNumber,
                 website,
@@ -99,13 +104,8 @@ export const updateOrganization = async (req: Request, res: Response): Promise<v
 
     try {
         const { id } = req.params;
-        const { name, contactEmail, contactPhone, address, isActive, taxId, dunsNumber, website, socialMedia, existingLegalProofs } = req.body;
-
-        // Validate website domain matches email domain
-        if (website && !validateDomain(contactEmail, website)) {
-            res.status(400).json({ message: "Website domain must match email domain" });
-            return;
-        }
+        const { name, contactEmail, contactPhone, address, isActive, taxId, dunsNumber, website, 
+            address2, city, state, country, zipCode, socialMedia, existingLegalProofs } = req.body;
 
         // Get existing legalProofs from DB
         const existingOrg = await prisma.organization.findUnique({
@@ -134,6 +134,11 @@ export const updateOrganization = async (req: Request, res: Response): Promise<v
                 contactEmail,
                 contactPhone,
                 address,
+                address2,
+                city,
+                country,
+                state,
+                zipCode,
                 isActive,
                 taxId,
                 dunsNumber,
